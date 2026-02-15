@@ -1751,3 +1751,96 @@
  *       500:
  *         description: Database error
  */
+
+/**
+ * @swagger
+ * /cities/services/requests/report:
+ *   get:
+ *     summary: Get Head Dashboard & Performance Report
+ *     description: >
+ *       Generates a status report within a specified date range for the Head's specific administrative unit (excluding sub-units).
+ *       Returns aggregate counts (total, pending, rejected, etc.) and a paginated list of individual requests.
+ *       Only accessible to users with the 'HEAD' role within the administrative unit hierarchy.
+ *     tags: [Service Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: startDate
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Start date (YYYY-MM-DD or ISO)
+ *         example: "2024-02-01"
+ *       - in: query
+ *         name: endDate
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: End date (YYYY-MM-DD or ISO)
+ *         example: "2024-02-15"
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of items per page
+ *     responses:
+ *       200:
+ *         description: Dashboard report generated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     summary:
+ *                       type: object
+ *                       properties:
+ *                         totalRequests:
+ *                           type: integer
+ *                         totalPending:
+ *                           type: integer
+ *                         totalRejected:
+ *                           type: integer
+ *                         totalInProgress:
+ *                           type: integer
+ *                         totalCompleted:
+ *                           type: integer
+ *                         totalGreen:
+ *                           type: integer
+ *                         totalRed:
+ *                           type: integer
+ *                     requests:
+ *                       type: object
+ *                       properties:
+ *                         totalItems:
+ *                           type: integer
+ *                         totalPages:
+ *                           type: integer
+ *                         currentPage:
+ *                           type: integer
+ *                         rows:
+ *                           type: array
+ *                           items:
+ *                             type: object
+ *       400:
+ *         description: Invalid date range or query parameters
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */

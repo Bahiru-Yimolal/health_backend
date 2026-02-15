@@ -368,6 +368,32 @@ const validateOfficerCompleteTaskInput = (req, res, next) => {
   next();
 };
 
+const dashboardQuerySchema = Joi.object({
+  startDate: Joi.date().iso().required().messages({
+    "date.base": "Start date must be a valid date",
+    "any.required": "Start date is required",
+  }),
+  endDate: Joi.date().iso().required().messages({
+    "date.base": "End date must be a valid date",
+    "any.required": "End date is required",
+  }),
+  page: Joi.number().integer().min(1).default(1),
+  limit: Joi.number().integer().min(1).max(100).default(10),
+});
+
+const validateDashboardQuery = (req, res, next) => {
+  const { error } = dashboardQuerySchema.validate(req.query);
+
+  if (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.details[0].message,
+    });
+  }
+
+  next();
+};
+
 module.exports = {
   validateCityInput,
   validateAssignUserInput,
@@ -382,4 +408,5 @@ module.exports = {
   validateAssignedRequestsQuery,
   validateCitizenRequestsQuery,
   validateOfficerCompleteTaskInput,
+  validateDashboardQuery,
 };

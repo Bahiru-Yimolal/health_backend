@@ -546,6 +546,25 @@ const listCitizenRequestsController = async (req, res, next) => {
   }
 };
 
+const getHeadDashboardController = async (req, res, next) => {
+  try {
+    const { startDate, endDate, page, limit } = req.query;
+    const result = await getHeadDashboardData(req.user, {
+      startDate,
+      endDate,
+      page: parseInt(page) || 1,
+      limit: parseInt(limit) || 10,
+    });
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createCityController,
   listCitiesController,
@@ -574,4 +593,5 @@ module.exports = {
   confirmServiceRequestController,
   getUnitPersonnelDetailsController,
   listCitizenRequestsController,
+  getHeadDashboardController,
 };
