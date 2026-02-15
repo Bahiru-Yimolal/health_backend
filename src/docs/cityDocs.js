@@ -1915,3 +1915,40 @@
  *       500:
  *         description: Internal server error
  */
+
+/**
+ * @swagger
+ * /cities/services/group-leaders:
+ *   get:
+ *     summary: Fetch Group Leaders within the unit
+ *     description: >
+ *       Returns a list of all users with the 'GROUP_LEADER' role belonging to the same administrative unit as the authenticated Head.
+ *       Used to populate Group Leader selection filters.
+ *     tags: [Service Management]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of Group Leaders retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         format: uuid
+ *                       name:
+ *                         type: string
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */

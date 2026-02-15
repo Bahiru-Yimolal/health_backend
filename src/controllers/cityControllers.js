@@ -587,6 +587,18 @@ const getGroupDashboardController = async (req, res, next) => {
   }
 };
 
+const getUnitGroupLeadersController = async (req, res, next) => {
+  try {
+    const result = await getUnitGroupLeaders(req.user.unit.id);
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createCityController,
   listCitiesController,
@@ -617,4 +629,5 @@ module.exports = {
   listCitizenRequestsController,
   getHeadDashboardController,
   getGroupDashboardController,
+  getUnitGroupLeadersController,
 };

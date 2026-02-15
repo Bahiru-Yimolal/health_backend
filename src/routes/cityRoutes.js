@@ -29,6 +29,7 @@ const {
   getUnitPersonnelDetailsController,
   getHeadDashboardController,
   getGroupDashboardController,
+  getUnitGroupLeadersController,
 } = require("../controllers/cityControllers");
 const {
   validateCityInput,
@@ -195,6 +196,13 @@ router.get(
   assignmentMiddleware,
   validateGroupDashboardQuery,
   getGroupDashboardController
+);
+
+router.get(
+  "/services/group-leaders",
+  protect,
+  assignmentMiddleware,
+  getUnitGroupLeadersController
 );
 
 // Citizen Service Request Initiation (Public)

@@ -1351,6 +1351,34 @@ const listCitizenRequests = async (phone, { page = 1, limit = 10, status }) => {
   }
 };
 
+/**
+ * Fetch all Group Leaders within a specific unit
+ */
+const getUnitGroupLeaders = async (unitId) => {
+  try {
+    const glRole = await Role.findOne({ where: { name: "GROUP_LEADER" } });
+    if (!glRole) throw new AppError("Group Leader role not found", 404);
+
+    const assignments = await UserAssignment.findAll({
+      where: { unit_id: unitId, role_id: glRole.id },
+      include: [
+        {
+          model: User,
+          attributes: ["user_id", "first_name", "last_name"],
+        },
+      ],
+    });
+
+    return assignments.map((a) => ({
+      id: a.User.user_id,
+      name: `${a.User.first_name} ${a.User.last_name}`,
+    }));
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    throw new AppError("Database error: Unable to fetch group leaders", 500);
+  }
+};
+
 module.exports = {
   createCityService,
   listCitiesService,
@@ -1380,4 +1408,5 @@ module.exports = {
   listCitizenRequests,
   getHeadDashboardData,
   getGroupDashboardData,
+  getUnitGroupLeaders,
 };
