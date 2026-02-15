@@ -26,6 +26,8 @@ const {
   confirmServiceRequest,
   getUnitPersonnelDetailsService,
   listCitizenRequests,
+  getGroupDashboardData,
+  getHeadDashboardData,
   getPersonnelByRoleService } = require("../services/cityService");
 
 
@@ -565,6 +567,26 @@ const getHeadDashboardController = async (req, res, next) => {
   }
 };
 
+const getGroupDashboardController = async (req, res, next) => {
+  try {
+    const { startDate, endDate, page, limit, groupLeaderId } = req.query;
+    const result = await getGroupDashboardData(req.user, {
+      startDate,
+      endDate,
+      page: parseInt(page) || 1,
+      limit: parseInt(limit) || 10,
+      groupLeaderId,
+    });
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createCityController,
   listCitiesController,
@@ -594,4 +616,5 @@ module.exports = {
   getUnitPersonnelDetailsController,
   listCitizenRequestsController,
   getHeadDashboardController,
+  getGroupDashboardController,
 };

@@ -1844,3 +1844,74 @@
  *       500:
  *         description: Internal server error
  */
+
+/**
+ * @swagger
+ * /cities/services/requests/report/group:
+ *   get:
+ *     summary: Get Group Leader specific Performance Report
+ *     description: >
+ *       Generates a performance report specifically for a single Group Leader within the Head's unit.
+ *       Requires a specific 'groupLeaderId'.
+ *       Only accessible to users with the 'HEAD' role.
+ *     tags: [Service Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: startDate
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Start date
+ *       - in: query
+ *         name: endDate
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: End date
+ *       - in: query
+ *         name: groupLeaderId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The UUID of the Group Leader
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *     responses:
+ *       200:
+ *         description: Group Leader report generated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     summary:
+ *                       type: object
+ *                     services:
+ *                       type: array
+ *                     requests:
+ *                       type: object
+ *       400:
+ *         description: Invalid input or missing groupLeaderId
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */

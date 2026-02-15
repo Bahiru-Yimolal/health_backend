@@ -28,6 +28,7 @@ const {
   citizenCompleteTaskController,
   getUnitPersonnelDetailsController,
   getHeadDashboardController,
+  getGroupDashboardController,
 } = require("../controllers/cityControllers");
 const {
   validateCityInput,
@@ -44,6 +45,7 @@ const {
   validateCitizenRequestsQuery,
   validateOfficerCompleteTaskInput,
   validateDashboardQuery,
+  validateGroupDashboardQuery,
 } = require("../validators/cityValidators");
 
 const { protect, assignmentMiddleware, levelGuard, permissionMiddleware } = require("../middlewares/authMiddleware");
@@ -185,6 +187,14 @@ router.get(
   assignmentMiddleware,
   validateDashboardQuery,
   getHeadDashboardController
+);
+
+router.get(
+  "/services/requests/report/group",
+  protect,
+  assignmentMiddleware,
+  validateGroupDashboardQuery,
+  getGroupDashboardController
 );
 
 // Citizen Service Request Initiation (Public)

@@ -1191,6 +1191,12 @@ const getHeadDashboardData = async (user, { startDate, endDate, page = 1, limit 
       order: [["createdAt", "DESC"]],
     });
 
+    // 4. Get all services for this unit
+    const services = await Service.findAll({
+      where: { unit_id: user.unit.id },
+      attributes: ["id", "type", "place", "duration", "quality_standard", "delivery_mode", "paymentAmount"],
+    });
+
     return {
       summary: summaryResult[0] || {
         totalRequests: 0,
@@ -1201,6 +1207,7 @@ const getHeadDashboardData = async (user, { startDate, endDate, page = 1, limit 
         totalGreen: 0,
         totalRed: 0,
       },
+      services,
       requests: {
         totalItems: count,
         totalPages: Math.ceil(count / limit),
@@ -1215,8 +1222,102 @@ const getHeadDashboardData = async (user, { startDate, endDate, page = 1, limit 
 };
 
 /**
- * Public: List all service requests for a specific citizen phone number
+ * Group level dashboard data: Filtered by specific Group Leader within the unit
  */
+const getGroupDashboardData = async (user, { startDate, endDate, page = 1, limit = 10, groupLeaderId }) => {
+  try {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+
+    // 1. Base where clause (Unit + Group Leader)
+    const whereClause = {
+      createdAt: { [Op.between]: [start, end] },
+      "$Service.unit_id$": user.unit.id,
+      group_leader_id: groupLeaderId,
+    };
+
+    // 2. Aggregate counts
+    const summaryResult = await ServiceRequest.findAll({
+      where: whereClause,
+      include: [{ model: Service, attributes: [] }],
+      attributes: [
+        [sequelize.fn("COUNT", sequelize.col("ServiceRequest.id")), "totalRequests"],
+        [
+          sequelize.literal(`COUNT(CASE WHEN "ServiceRequest"."status" = 'PENDING' THEN 1 END)`),
+          "totalPending",
+        ],
+        [
+          sequelize.literal(`COUNT(CASE WHEN "ServiceRequest"."status" = 'REJECTED' THEN 1 END)`),
+          "totalRejected",
+        ],
+        [
+          sequelize.literal(
+            `COUNT(CASE WHEN "ServiceRequest"."status" IN ('IN_PROGRESS', 'CONFIRMED') THEN 1 END)`
+          ),
+          "totalInProgress",
+        ],
+        [
+          sequelize.literal(`COUNT(CASE WHEN "ServiceRequest"."status" = 'COMPLETED' THEN 1 END)`),
+          "totalCompleted",
+        ],
+        [
+          sequelize.literal(`COUNT(CASE WHEN "ServiceRequest"."completion_status" = 'GREEN' THEN 1 END)`),
+          "totalGreen",
+        ],
+        [
+          sequelize.literal(`COUNT(CASE WHEN "ServiceRequest"."completion_status" = 'RED' THEN 1 END)`),
+          "totalRed",
+        ],
+      ],
+      raw: true,
+    });
+
+    // 3. Paginated Requests
+    const offset = (page - 1) * limit;
+    const { rows, count } = await ServiceRequest.findAndCountAll({
+      where: whereClause,
+      include: [
+        {
+          model: Service,
+          attributes: ["type", "place"],
+          include: [{ model: AdministrativeUnit, attributes: ["name", "level"] }],
+        },
+      ],
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+      order: [["createdAt", "DESC"]],
+    });
+
+    // 4. Get all services for this unit (for ref)
+    const services = await Service.findAll({
+      where: { unit_id: user.unit.id },
+      attributes: ["id", "type", "place", "duration", "quality_standard", "delivery_mode", "paymentAmount"],
+    });
+
+    return {
+      summary: summaryResult[0] || {
+        totalRequests: 0,
+        totalPending: 0,
+        totalRejected: 0,
+        totalInProgress: 0,
+        totalCompleted: 0,
+        totalGreen: 0,
+        totalRed: 0,
+      },
+      services,
+      requests: {
+        totalItems: count,
+        totalPages: Math.ceil(count / limit),
+        currentPage: parseInt(page),
+        rows,
+      },
+    };
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    throw new AppError("Database error: Unable to fetch group dashboard data", 500);
+  }
+};
 const listCitizenRequests = async (phone, { page = 1, limit = 10, status }) => {
   try {
     const offset = (page - 1) * limit;
@@ -1278,4 +1379,5 @@ module.exports = {
   getUnitPersonnelDetailsService,
   listCitizenRequests,
   getHeadDashboardData,
+  getGroupDashboardData,
 };

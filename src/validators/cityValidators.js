@@ -394,6 +394,36 @@ const validateDashboardQuery = (req, res, next) => {
   next();
 };
 
+const groupDashboardQuerySchema = Joi.object({
+  startDate: Joi.date().iso().required().messages({
+    "date.base": "Start date must be a valid date",
+    "any.required": "Start date is required",
+  }),
+  endDate: Joi.date().iso().required().messages({
+    "date.base": "End date must be a valid date",
+    "any.required": "End date is required",
+  }),
+  groupLeaderId: Joi.string().guid({ version: "uuidv4" }).required().messages({
+    "string.guid": "Valid Group Leader ID is required",
+    "any.required": "Group Leader ID is required",
+  }),
+  page: Joi.number().integer().min(1).default(1),
+  limit: Joi.number().integer().min(1).max(100).default(10),
+});
+
+const validateGroupDashboardQuery = (req, res, next) => {
+  const { error } = groupDashboardQuerySchema.validate(req.query);
+
+  if (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.details[0].message,
+    });
+  }
+
+  next();
+};
+
 module.exports = {
   validateCityInput,
   validateAssignUserInput,
@@ -409,4 +439,5 @@ module.exports = {
   validateCitizenRequestsQuery,
   validateOfficerCompleteTaskInput,
   validateDashboardQuery,
+  validateGroupDashboardQuery,
 };
