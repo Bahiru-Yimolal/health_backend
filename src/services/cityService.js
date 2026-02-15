@@ -737,7 +737,7 @@ const listAssignedServices = async (userId, { page = 1, limit = 10 }) => {
 /**
  * Citizen initiates a service request
  */
-const createServiceRequest = async ({ service_id, user_phone }) => {
+const createServiceRequest = async ({ service_id, user_phone, user_full_name }) => {
   try {
     // 1. Verify service exists
     const service = await Service.findByPk(service_id);
@@ -762,6 +762,7 @@ const createServiceRequest = async ({ service_id, user_phone }) => {
     const request = await ServiceRequest.create({
       service_id,
       user_phone,
+      user_full_name,
       status: "PENDING",
     });
 

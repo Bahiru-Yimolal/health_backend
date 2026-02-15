@@ -18,6 +18,10 @@ const ServiceRequest = sequelize.define(
             type: DataTypes.STRING,
             allowNull: false,
         },
+        user_full_name: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
         status: {
             type: DataTypes.ENUM("PENDING", "CONFIRMED", "REJECTED", "IN_PROGRESS", "COMPLETED"),
             defaultValue: "PENDING",

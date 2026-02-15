@@ -377,8 +377,8 @@ const listAssignedServicesController = async (req, res, next) => {
 
 const createServiceRequestController = async (req, res, next) => {
   try {
-    const { service_id, user_phone } = req.body;
-    const request = await createServiceRequest({ service_id, user_phone });
+    const { service_id, user_phone, user_full_name } = req.body;
+    const request = await createServiceRequest({ service_id, user_phone, user_full_name });
 
     res.status(201).json({
       success: true,

@@ -1273,7 +1273,7 @@
  *     summary: Initiate a service request (Citizen/Public)
  *     description: >
  *       Allows a citizen to initiate a service request by scanning a QR code.
- *       Requires the service ID and the citizen's phone number.
+ *       Requires the service ID, the citizen's phone number, and full name.
  *       Prevents duplicate active requests from the same phone for the same service.
  *     tags: [Citizen Operations]
  *     requestBody:
@@ -1285,6 +1285,7 @@
  *             required:
  *               - service_id
  *               - user_phone
+ *               - user_full_name
  *             properties:
  *               service_id:
  *                 type: string
@@ -1293,6 +1294,9 @@
  *               user_phone:
  *                 type: string
  *                 example: "0911223344"
+ *               user_full_name:
+ *                 type: string
+ *                 example: "Abebe Kebede"
  *     responses:
  *       201:
  *         description: Service request submitted successfully
