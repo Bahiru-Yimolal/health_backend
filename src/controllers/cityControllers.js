@@ -28,6 +28,7 @@ const {
   listCitizenRequests,
   getGroupDashboardData,
   getHeadDashboardData,
+  getUnitGroupLeaders,
   getPersonnelByRoleService } = require("../services/cityService");
 
 
