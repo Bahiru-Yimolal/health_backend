@@ -235,10 +235,7 @@ const createServiceRequestSchema = Joi.object({
       "string.empty": "Phone number is required",
       "string.pattern.base": "Invalid phone number format",
     }),
-  user_full_name: Joi.string().required().messages({
-    "string.empty": "Full name is required",
-    "any.required": "Full name is required",
-  }),
+
 });
 
 const validateCreateServiceRequestInput = (req, res, next) => {
