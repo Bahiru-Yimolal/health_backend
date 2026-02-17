@@ -47,6 +47,7 @@ const {
   validateOfficerCompleteTaskInput,
   validateDashboardQuery,
   validateGroupDashboardQuery,
+  validateCitizenCompleteTaskInput
 } = require("../validators/cityValidators");
 
 const { protect, assignmentMiddleware, levelGuard, permissionMiddleware } = require("../middlewares/authMiddleware");
@@ -231,7 +232,7 @@ router.put(
 
 router.patch(
   "/services/requests/:id/citizen-complete",
-  validateCreateServiceRequestInput, // Reusing phone validator
+  validateCitizenCompleteTaskInput, // Reusing phone validator
   citizenCompleteTaskController
 );
 

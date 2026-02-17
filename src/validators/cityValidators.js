@@ -235,7 +235,10 @@ const createServiceRequestSchema = Joi.object({
       "string.empty": "Phone number is required",
       "string.pattern.base": "Invalid phone number format",
     }),
-
+  user_full_name: Joi.string().required().messages({
+    "string.empty": "Full name is required",
+    "any.required": "Full name is required",
+  }),
 });
 
 const validateCreateServiceRequestInput = (req, res, next) => {
@@ -365,6 +368,33 @@ const validateOfficerCompleteTaskInput = (req, res, next) => {
   next();
 };
 
+const citizenCompleteTaskSchema = Joi.object({
+  service_id: Joi.string().guid({ version: "uuidv4" }).required().messages({
+    "string.empty": "Service ID is required",
+    "string.guid": "Invalid Service ID format",
+  }),
+  user_phone: Joi.string()
+    .pattern(/^[0-9+]{10,15}$/)
+    .required()
+    .messages({
+      "string.empty": "Phone number is required",
+      "string.pattern.base": "Invalid phone number format",
+    }),
+});
+
+const validateCitizenCompleteTaskInput = (req, res, next) => {
+  const { error } = citizenCompleteTaskSchema.validate(req.body);
+
+  if (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.details[0].message,
+    });
+  }
+
+  next();
+};
+
 const dashboardQuerySchema = Joi.object({
   startDate: Joi.date().iso().required().messages({
     "date.base": "Start date must be a valid date",
@@ -437,4 +467,5 @@ module.exports = {
   validateOfficerCompleteTaskInput,
   validateDashboardQuery,
   validateGroupDashboardQuery,
+  validateCitizenCompleteTaskInput
 };
