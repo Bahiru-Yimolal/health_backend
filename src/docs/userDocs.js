@@ -235,6 +235,9 @@
  *                       type: string
  *                       format: date-time
  *                       example: "2024-10-30T12:00:00Z"
+ *                     mustChangePassword:
+ *                       type: boolean
+ *                       example: true
  *       401:
  *         description: Invalid credentials
  *         content:

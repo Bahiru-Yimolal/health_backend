@@ -13,7 +13,7 @@ const userSchema = Joi.object({
     "string.max": "Last name must be less than or equal to 30 characters.",
   }),
   email: Joi.string()
-    .email() 
+    .email()
     .allow(null, "")
     .messages({
       "string.empty": "Email is required.",
@@ -29,16 +29,10 @@ const userSchema = Joi.object({
       "string.pattern.base": "Phone number must contain only numbers.",
     }),
   password: Joi.string()
-    .min(8) // Minimum 8 characters
-    .pattern(new RegExp("(?=.*[a-z])")) // At least one lowercase letter
-    .pattern(new RegExp("(?=.*[A-Z])")) // At least one uppercase letter
-    .pattern(new RegExp("(?=.*[0-9])")) // At least one number
-    .pattern(new RegExp("(?=.*[!@#$%^&*])")) // At least one special character
+    .min(6) // 
     .required()
     .messages({
-      "string.min": "Password must be at least 8 characters long.",
-      "string.pattern.base":
-        "Password must include at least one uppercase letter, one lowercase letter, one number, and one special character.",
+      "string.min": "Password must be at least 6 characters long.",
       "any.required": "Password is required.",
     }),
 });
@@ -91,29 +85,17 @@ const validateUserUpdate = (req, res, next) => {
 
 const updatePasswordSchema = Joi.object({
   currentPassword: Joi.string()
-    .min(8) // Minimum 8 characters
-    .pattern(new RegExp("(?=.*[a-z])")) // At least one lowercase letter
-    .pattern(new RegExp("(?=.*[A-Z])")) // At least one uppercase letter
-    .pattern(new RegExp("(?=.*[0-9])")) // At least one number
-    .pattern(new RegExp("(?=.*[!@#$%^&*])")) // At least one special character
+    .min(6) // Minimum 8 characters
     .required()
     .messages({
-      "string.min": "Password must be at least 8 characters long.",
-      "string.pattern.base":
-        "Password must include at least one uppercase letter, one lowercase letter, one number, and one special character.",
+      "string.min": "Password must be at least 6 characters long.",
       "any.required": "Password is required.",
     }),
   newPassword: Joi.string()
-    .min(8) // Minimum 8 characters
-    .pattern(new RegExp("(?=.*[a-z])")) // At least one lowercase letter
-    .pattern(new RegExp("(?=.*[A-Z])")) // At least one uppercase letter
-    .pattern(new RegExp("(?=.*[0-9])")) // At least one number
-    .pattern(new RegExp("(?=.*[!@#$%^&*])")) // At least one special character
+    .min(6) // Minimum 8 characters
     .required()
     .messages({
-      "string.min": "Password must be at least 8 characters long.",
-      "string.pattern.base":
-        "Password must include at least one uppercase letter, one lowercase letter, one number, and one special character.",
+      "string.min": "Password must be at least 6 characters long.",
       "any.required": "Password is required.",
     }),
   userId: Joi.number().integer().optional().messages({
@@ -141,16 +123,10 @@ const loginSchema = Joi.object({
       "string.pattern.base": "Phone number must contain only numbers.",
     }),
   password: Joi.string()
-    .min(8) // Minimum 8 characters
-    .pattern(new RegExp("(?=.*[a-z])")) // At least one lowercase letter
-    .pattern(new RegExp("(?=.*[A-Z])")) // At least one uppercase letter
-    .pattern(new RegExp("(?=.*[0-9])")) // At least one number
-    .pattern(new RegExp("(?=.*[!@#$%^&*])")) // At least one special character
+    .min(6) // Minimum 8 characters
     .required()
     .messages({
-      "string.min": "Password must be at least 8 characters long.",
-      "string.pattern.base":
-        "Password must include at least one uppercase letter, one lowercase letter, one number, and one special character.",
+      "string.min": "Password must be at least 6 characters long.",
       "any.required": "Password is required.",
     }),
 });
@@ -188,16 +164,10 @@ const validateEmail = (req, res, next) => {
 
 const validatePasswordUserSchema = Joi.object({
   password: Joi.string()
-    .min(8) // Minimum 8 characters
-    .pattern(new RegExp("(?=.*[a-z])")) // At least one lowercase letter
-    .pattern(new RegExp("(?=.*[A-Z])")) // At least one uppercase letter
-    .pattern(new RegExp("(?=.*[0-9])")) // At least one number
-    .pattern(new RegExp("(?=.*[!@#$%^&*])")) // At least one special character
+    .min(6) // Minimum 8 characters
     .required()
     .messages({
-      "string.min": "Password must be at least 8 characters long.",
-      "string.pattern.base":
-        "Password must include at least one uppercase letter, one lowercase letter, one number, and one special character.",
+      "string.min": "Password must be at least 6 characters long.",
       "any.required": "Password is required.",
     }),
 });

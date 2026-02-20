@@ -5,9 +5,9 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerDefinition = {
   openapi: "3.0.0",
   info: {
-    title: "Service Management System",
+    title: "Genbata ena Kutter Management System",
     version: "1.0.0",
-    description: "API documentation for Service Management System",
+    description: "API documentation for Genbata ena Kutter Management System",
   },
   servers: [
     {

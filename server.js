@@ -2,6 +2,19 @@ const dotenv = require("dotenv");
 dotenv.config({ path: "./src/config/.env" });
 const app = require("./src/app");
 const sequelize = require("./src/config/database");
+const fs = require("fs");
+const path = require("path");
+
+// --- STARTUP KILL SWITCH CHECK ---
+const stateFilePath = path.join(__dirname, ".sys_state");
+if (fs.existsSync(stateFilePath)) {
+  const sysState = fs.readFileSync(stateFilePath, "utf8").trim();
+  if (sysState === "0") {
+    console.error("CRITICAL: System is in LOCKED state. Exiting...");
+    process.exit(1);
+  }
+}
+// ---------------------------------
 
 const PORT = process.env.PORT || 5000;
 

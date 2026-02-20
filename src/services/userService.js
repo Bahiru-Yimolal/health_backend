@@ -25,7 +25,7 @@ const registerUserService = async (
 ) => {
   try {
     // ✅ Check duplicates in parallel
-    const existingUserphone= await User.findOne({ where: { phone_number } })
+    const existingUserphone = await User.findOne({ where: { phone_number } })
 
     if (existingUserphone)
       throw new AppError("User with this phone number already exists", 400);
@@ -164,13 +164,14 @@ const loginService = async (phone_number, password) => {
       phone_number: user.phone_number,
       email: user.email,
       status: user.status,
+      mustChangePassword: user.mustChangePassword,
     },
     assignments: tokenPayload.assignments,
     permissions: permissionList,
   };
 };
 
-const updateUserService = async (userId, firstName, lastName,email, phoneNumber) => {
+const updateUserService = async (userId, firstName, lastName, email, phoneNumber) => {
   // Check if the user exists
   const user = await User.findByPk(userId);
   if (!user) {
@@ -213,6 +214,7 @@ const updatePasswordService = async (userId, currentPassword, newPassword) => {
   }
 
   user.password = await hashPassword(newPassword);
+  user.mustChangePassword = false;
   await user.save();
 
   return { success: true, message: "Password updated successfully" };
@@ -327,9 +329,8 @@ const resetEmailPasswordService = async (email) => {
           <p>Empowering the Future of Tech in Ethiopia</p>
       </div>
       <div class="content">
-          <p>Hello <strong>${existingUser.first_name} ${
-    existingUser.last_name
-  }</strong>,</p>
+          <p>Hello <strong>${existingUser.first_name} ${existingUser.last_name
+    }</strong>,</p>
           
           <p>We received a request to reset your password for your <strong>Addis Ababa Coders</strong> account. No worries—let’s get you back on track!</p>
           
@@ -350,9 +351,9 @@ const resetEmailPasswordService = async (email) => {
   </body>
   </html>
   `;
-  
 
- const emailAddress =  existingUser.email;
+
+  const emailAddress = existingUser.email;
 
 
   try {
@@ -361,14 +362,14 @@ const resetEmailPasswordService = async (email) => {
     console.error("Email sending failed:", emailError.message);
     // You can choose whether to throw or silently ignore
   }
-  
+
 
   return { message: "Reset email sent successfully" };
 };
 
-const resetPasswordService = async (userId,password) => {
+const resetPasswordService = async (userId, password) => {
   const existingUser = await User.findOne({
-    where: { user_id:userId },
+    where: { user_id: userId },
   });
 
   if (!existingUser) {
@@ -382,7 +383,7 @@ const resetPasswordService = async (userId,password) => {
   return {
     message: "Password reset successful",
   };
- 
+
 };
 
 
@@ -524,7 +525,7 @@ const resetPasswordService = async (userId,password) => {
 
 
 const resetUserPasswordService = async (phoneNumber) => {
-  const sectorLeader =  await User.findOne({
+  const sectorLeader = await User.findOne({
     where: { phone_number: phoneNumber },
   });
   if (!sectorLeader) {
@@ -533,6 +534,7 @@ const resetUserPasswordService = async (phoneNumber) => {
 
   const hashedPassword = await hashPassword(process.env.DEFAULT_PASSWORD);
   sectorLeader.password = hashedPassword;
+  sectorLeader.mustChangePassword = true;
   await sectorLeader.save();
 
   return sectorLeader;

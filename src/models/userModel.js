@@ -36,6 +36,11 @@ const User = sequelize.define(
       type: DataTypes.ENUM("UNASSIGNED", "ACTIVE", "DEACTIVATED"),
       defaultValue: "UNASSIGNED",
     },
+    mustChangePassword: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+      allowNull: true,
+    },
   },
   {
     timestamps: true,
