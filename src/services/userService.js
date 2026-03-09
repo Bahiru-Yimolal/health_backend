@@ -5,6 +5,7 @@ const {
   Permission,
   UserAssignment,
   UserPermission,
+  RolePermission,
   AuditLog,
 } = require("../models");
 
@@ -15,38 +16,55 @@ const generateToken = require("../utils/tokenUtil");
 const jwt = require("jsonwebtoken");
 const sendEmail = require("../utils/sendEmail"); // Utility to send emails
 const { JWT_SECRET, RESET_PASSWORD_TOKEN_EXPIRY, CLIENT_URL } = process.env;
+const sequelize = require("../config/database");
+const { Roles, Permissions, DefaultRolePermissions } = require("../config/rolePermissions");
 
 const registerUserService = async (
   first_name,
   last_name,
+  username,
   email,
   phone_number,
-  password
+  password,
+  language_preference
 ) => {
+  const transaction = await sequelize.transaction();
   try {
-    // ✅ Check duplicates in parallel
-    const existingUserphone = await User.findOne({ where: { phone_number } })
+    // ✅ Check duplicates
+    const existingUser = await User.findOne({
+      where: {
+        [Op.or]: [
+          { phone_number },
+          { username: username || null },
+          { email: email || null }
+        ]
+      },
+      transaction
+    });
 
-    if (existingUserphone)
-      throw new AppError("User with this phone number already exists", 400);
-    // if (existingUseremail)
-    //   throw new AppError("User with this Email Address already exists", 400);
+    if (existingUser) {
+      if (existingUser.phone_number === phone_number) throw new AppError("errors.phone_exists", 400);
+      if (existingUser.username && existingUser.username === username) throw new AppError("errors.username_exists", 400);
+      if (existingUser.email && existingUser.email === email) throw new AppError("errors.email_exists", 400);
+    }
 
     // Hash password
     const hashedPassword = await hashPassword(password);
 
     // Check if this is the first user
-    const firstUser = !(await User.findOne());
+    const firstUser = !(await User.findOne({ transaction }));
 
     // Create user
     const user = await User.create({
       first_name,
       last_name,
+      username,
       email,
       phone_number,
       password: hashedPassword,
+      language_preference, // New field
       status: firstUser ? "ACTIVE" : "UNASSIGNED",
-    });
+    }, { transaction });
 
     // ----------- Bootstrap first user -------------
     if (firstUser) {
@@ -54,53 +72,72 @@ const registerUserService = async (
       const [ethiopiaUnit] = await AdministrativeUnit.findOrCreate({
         where: { level: "ETHIOPIA" },
         defaults: { name: "Ethiopia", parent_id: null },
+        transaction,
       });
 
       // Admin role
       const [adminRole] = await Role.findOrCreate({
-        where: { name: "ADMIN" },
-        defaults: { description: "Admin role" },
+        where: { name: Roles.ADMIN },
+        defaults: { description: "Main administrator role" },
+        transaction,
       });
 
       // Assign user to Ethiopia unit as Admin
-      const userAssignment = await UserAssignment.create({
+      await UserAssignment.create({
         user_id: user.user_id,
         unit_id: ethiopiaUnit.id,
         role_id: adminRole.id,
-      });
+      }, { transaction });
 
-      // Ensure permissions exist
-      const permissionNames = [
-        "CREATE_FOLDER",
-        "READ_FOLDER",
-        "UPDATE_FOLDER",
-        "DELETE_FOLDER",
-        "ADMIN_PERMISSIONS",
-      ];
+      // Identify standard permissions for ADMIN
+      const standardPermNames = DefaultRolePermissions[Roles.ADMIN] || [];
 
       const permissions = await Promise.all(
-        permissionNames.map((name) =>
+        standardPermNames.map((name) =>
           Permission.findOrCreate({
             where: { name },
             defaults: { description: `${name.replace(/_/g, " ").toLowerCase()}` },
+            transaction,
           }).then(([perm]) => perm)
         )
       );
 
-      // Assign all permissions to super admin
+      // Link all permissions to ADMIN Role (The Standard)
       await Promise.all(
         permissions.map((perm) =>
-          UserPermission.create({
-            assignment_id: userAssignment.id,
-            permission_id: perm.id,
+          RolePermission.findOrCreate({
+            where: {
+              role_id: adminRole.id,
+              permission_id: perm.id,
+            },
+            transaction,
           })
         )
       );
     }
 
+    await transaction.commit();
     return user;
   } catch (error) {
+    await transaction.rollback();
+
+    // Log the error for internal tracking
+    console.error("Registration Error Detailed:", error);
+
     if (error instanceof AppError) throw error;
+
+    // Handle Sequelize Unique Constraint Errors
+    if (error.name === "SequelizeUniqueConstraintError") {
+      const field = error.errors[0].path;
+      if (field === "email") throw new AppError("errors.email_exists", 400);
+      if (field === "username") throw new AppError("errors.username_exists", 400);
+      if (field === "phone_number") throw new AppError("errors.phone_exists", 400);
+    }
+
+    if (error.name === "SequelizeValidationError") {
+      throw new AppError(error.errors[0].message, 400);
+    }
+
     throw new AppError("Database error: Unable to create user", 500);
   }
 };
@@ -109,16 +146,16 @@ const registerUserService = async (
 const loginService = async (phone_number, password) => {
   // 1️⃣ Find user by phone number
   const user = await User.findOne({ where: { phone_number } });
-  if (!user) throw new AppError("Invalid credentials", 401);
+  if (!user) throw new AppError("errors.invalid_credentials", 401);
 
   // 2️⃣ Check password
   const isMatch = await comparePassword(password, user.password);
-  if (!isMatch) throw new AppError("Invalid credentials", 401);
+  if (!isMatch) throw new AppError("errors.invalid_credentials", 401);
 
   // 3️⃣ Check if user is assigned
   if (user.status === "UNASSIGNED") {
     return {
-      message: "Your account is pending assignment",
+      message: "errors.account_pending",
       status: "UNASSIGNED",
     };
   }
@@ -132,25 +169,40 @@ const loginService = async (phone_number, password) => {
     ],
   });
 
-  // 5️⃣ Fetch permissions for all assignments
-  const permissions = await UserPermission.findAll({
-    where: { assignment_id: assignments.map(a => a.id) },
+  // 5️⃣ Fetch Role-level permissions (The Standard)
+  const rolePermissions = await RolePermission.findAll({
+    where: { role_id: assignments.map((a) => a.role_id) },
     include: [{ model: Permission, attributes: ["name"] }],
   });
 
-  // Flatten permissions into array of names
-  const permissionList = permissions.map(p => p.Permission.name);
+  // 6️⃣ Fetch User-level overrides (The Exception)
+  const userOverrides = await UserPermission.findAll({
+    where: { assignment_id: assignments.map((a) => a.id) },
+    include: [{ model: Permission, attributes: ["name"] }],
+  });
 
-  // 6️⃣ Generate JWT token
+  // 7️⃣ Merge permissions into a unique list
+  const permissionSet = new Set();
+  rolePermissions.forEach((rp) => permissionSet.add(rp.Permission.name));
+  userOverrides.forEach((uo) => permissionSet.add(uo.Permission.name));
+
+  const permissionList = Array.from(permissionSet);
+
+  // 8️⃣ Generate JWT token
   const tokenPayload = {
     user_id: user.user_id,
     status: user.status,
-    assignments: assignments.map(a => ({
+    assignments: assignments.map((a) => ({
       assignment_id: a.id,
       role: a.Role.name,
-      unit: { id: a.AdministrativeUnit.id, name: a.AdministrativeUnit.name, level: a.AdministrativeUnit.level },
+      unit: {
+        id: a.AdministrativeUnit.id,
+        name: a.AdministrativeUnit.name,
+        level: a.AdministrativeUnit.level,
+      },
     })),
     permissions: permissionList,
+    language_preference: user.language_preference, // New claim
   };
 
   const token = generateToken(tokenPayload);
@@ -165,37 +217,54 @@ const loginService = async (phone_number, password) => {
       email: user.email,
       status: user.status,
       mustChangePassword: user.mustChangePassword,
+      language_preference: user.language_preference, // New field
     },
     assignments: tokenPayload.assignments,
     permissions: permissionList,
   };
 };
 
-const updateUserService = async (userId, firstName, lastName, email, phoneNumber) => {
+const updateUserService = async (
+  userId,
+  firstName,
+  lastName,
+  email,
+  phoneNumber,
+  username,
+  language_preference
+) => {
   // Check if the user exists
   const user = await User.findByPk(userId);
   if (!user) {
-    throw new AppError("User not found", 404);
+    throw new AppError("errors.user_not_found", 404);
   }
 
-  // Check if phone number is already in use by another user
-
-  if (phoneNumber) {
+  // Check if phone number or username is already in use by another user
+  if (phoneNumber || username) {
     const existingUser = await User.findOne({
-      where: { phone_number: phoneNumber, user_id: { [Op.ne]: userId } },
+      where: {
+        [Op.or]: [
+          phoneNumber ? { phone_number: phoneNumber } : null,
+          username ? { username: username } : null,
+        ].filter(Boolean),
+        user_id: { [Op.ne]: userId }
+      },
     });
+
     if (existingUser) {
-      throw new AppError("Phone number is already registered", 400);
+      const key = existingUser.phone_number === phoneNumber ? "errors.phone_exists" : "errors.username_exists";
+      throw new AppError(key, 400);
     }
   }
-
-  //  console.log("user");
 
   // Update user details
   user.first_name = firstName || user.first_name;
   user.last_name = lastName || user.last_name;
   user.phone_number = phoneNumber || user.phone_number;
   user.email = email || user.email;
+  user.username = username || user.username;
+  user.language_preference = language_preference || user.language_preference;
+
   await user.save();
 
   return user;
@@ -205,19 +274,19 @@ const updatePasswordService = async (userId, currentPassword, newPassword) => {
   const user = await User.findByPk(userId);
 
   if (!user) {
-    throw new AppError("User not found", 404);
+    throw new AppError("errors.user_not_found", 404);
   }
 
   const isPasswordValid = await comparePassword(currentPassword, user.password);
   if (!isPasswordValid) {
-    throw new AppError("Current password is incorrect", 400);
+    throw new AppError("errors.current_password_incorrect", 400);
   }
 
   user.password = await hashPassword(newPassword);
   user.mustChangePassword = false;
   await user.save();
 
-  return { success: true, message: "Password updated successfully" };
+  return { success: true, message: "success.password_updated" };
 };
 
 const getAllUsersService = async () => {
@@ -495,13 +564,13 @@ const resetPasswordService = async (userId, password) => {
 //   return results;
 // };
 
-// const getSectorNameService = async (id, role) => {
-//   if (role === "Sector Leader") {
-//     const sector = await Sector.findByPk(id);
-//     if (!sector) {
-//       throw new AppError("Sector not found", 404);
+// const getHealthCenterNameService = async (id, role) => {
+//   if (role === "HealthCenter Leader") {
+//     const healthCenter = await HealthCenter.findByPk(id);
+//     if (!healthCenter) {
+//       throw new AppError("HealthCenter not found", 404);
 //     }
-//     return sector.sector_name;
+//     return healthCenter.healthCenter_name;
 //   }
 
 //   if (role === "Sub-City Head") {
@@ -525,20 +594,57 @@ const resetPasswordService = async (userId, password) => {
 
 
 const resetUserPasswordService = async (phoneNumber) => {
-  const sectorLeader = await User.findOne({
+  const user = await User.findOne({
     where: { phone_number: phoneNumber },
   });
-  if (!sectorLeader) {
-    throw new Error("User not found");
+  if (!user) {
+    throw new AppError("errors.user_not_found", 404);
   }
 
   const hashedPassword = await hashPassword(process.env.DEFAULT_PASSWORD);
-  sectorLeader.password = hashedPassword;
-  sectorLeader.mustChangePassword = true;
-  await sectorLeader.save();
+  user.password = hashedPassword;
+  user.mustChangePassword = true;
+  await user.save();
 
-  return sectorLeader;
-  console.log(sectorLeader);
+  return user;
+};
+
+const resetUserPasswordByIdService = async (userId) => {
+  const user = await User.findByPk(userId);
+  if (!user) {
+    throw new AppError("errors.user_not_found", 404);
+  }
+
+  const hashedPassword = await hashPassword(process.env.DEFAULT_PASSWORD);
+  user.password = hashedPassword;
+  user.mustChangePassword = true;
+  await user.save();
+
+  return user;
+};
+
+const updateLanguagePreferenceService = async (userId, languagePreference) => {
+  const user = await User.findByPk(userId);
+  if (!user) {
+    throw new AppError("errors.user_not_found", 404);
+  }
+
+  user.language_preference = languagePreference;
+  await user.save();
+
+  return user;
+};
+
+const getUserByIdService = async (userId) => {
+  const user = await User.findByPk(userId, {
+    attributes: { exclude: ["password"] }
+  });
+
+  if (!user) {
+    throw new AppError("errors.user_not_found", 404);
+  }
+
+  return user;
 };
 
 const getAllUsersWithPendingService = async () => {
@@ -581,6 +687,9 @@ module.exports = {
   resetEmailPasswordService,
   resetPasswordService,
   resetUserPasswordService,
+  resetUserPasswordByIdService,
+  updateLanguagePreferenceService,
+  getUserByIdService,
   getAllUsersWithPendingService
 
 };

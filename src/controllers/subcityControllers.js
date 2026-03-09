@@ -16,8 +16,8 @@ const createSubcityController = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: "Subcity created successfully",
-      subcity: newSubcity,
+      message: req.t("success.subcity_created"),
+      data: newSubcity,
     });
   } catch (error) {
     next(error);
@@ -46,8 +46,8 @@ const updateSubcityController = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: "Subcity updated successfully",
-      subcity: updatedSubcity,
+      message: req.t("success.subcity_updated"),
+      data: updatedSubcity,
     });
   } catch (error) {
     next(error);
@@ -62,7 +62,7 @@ const deleteSubcityController = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: "Subcity deleted successfully",
+      message: req.t("success.subcity_deleted"),
     });
   } catch (error) {
     next(error);
@@ -82,8 +82,8 @@ const assignSubcityAdminController = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: "Subcity Admin assigned successfully",
-      assignment,
+      message: req.t("success.subcity_admin_assigned"),
+      data: assignment,
     });
   } catch (error) {
     next(error);
@@ -92,7 +92,7 @@ const assignSubcityAdminController = async (req, res, next) => {
 
 const createCityLevelUserController = async (req, res, next) => {
   try {
-    const { user_id, role, permissions  } = req.body; // Matches validator schema
+    const { user_id, role, permissions } = req.body; // Matches validator schema
 
     const assignment = await createCityLevelUserService({
       userId: user_id,
@@ -103,8 +103,8 @@ const createCityLevelUserController = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: "City Level User created successfully",
-      assignment,
+      message: req.t("success.city_level_user_created"),
+      data: assignment,
     });
   } catch (error) {
     next(error);
@@ -124,8 +124,8 @@ const updateCityLevelUserController = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: "Subcity Level User updated successfully",
-      result,
+      message: req.t("success.subcity_level_user_updated"),
+      data: result,
     });
   } catch (error) {
     next(error);

@@ -6,7 +6,9 @@ const Role = require("../models/roleModel");
 const Permission = require("../models/permissionModel");
 const UserPermission = require("../models/userPermissionModel");
 const { AppError } = require("../middlewares/errorMiddleware");
-const  AuditLog  = require("../models/auditLogModel");
+const AuditLog = require("../models/auditLogModel");
+const { RolePermission } = require("../models");
+const { DefaultRolePermissions } = require("../config/rolePermissions");
 
 
 /**
@@ -18,21 +20,11 @@ const assignUserToUnit = async ({ userId, unitId, roleId, permissions = null }) 
 
   try {
     const user = await User.findByPk(userId, { transaction });
-    if (!user) throw new AppError("User not found", 404);
-
     const unit = await AdministrativeUnit.findByPk(unitId, { transaction });
-    if (!unit) throw new AppError("Administrative unit not found", 404);
-
     const role = await Role.findByPk(roleId, { transaction });
-    if (!role) throw new AppError("Role not found", 404);
 
-    const existingAssignment = await UserAssignment.findOne({
-      where: { user_id: userId },
-      transaction,
-    });
-
-    if (existingAssignment) {
-      throw new AppError("User already assigned. Unassign before reassigning.", 409);
+    if (!user || !unit || !role) {
+      throw new AppError("errors.internal_error", 404);
     }
 
     const assignment = await UserAssignment.create(
@@ -40,17 +32,42 @@ const assignUserToUnit = async ({ userId, unitId, roleId, permissions = null }) 
       { transaction }
     );
 
-    // default permissions
-    const rolePermissions = {
-      ADMIN: ["CREATE_CRIME_FOLDER","READ_CRIME_FOLDER","UPDATE_CRIME_FOLDER","DELETE_CRIME_FOLDER","ADMIN_PERMISSIONS"],
-      OFFICER: ["CREATE_CRIME_FOLDER","READ_CRIME_FOLDER","UPDATE_CRIME_FOLDER","DELETE_CRIME_FOLDER"],
-      ANALYST: ["READ_CRIME_FOLDER"],
-    };
+    // --- HYBRID RBAC TRANSITION ---
+    // 1. Ensure Role-based permissions exist (The Standard)
+    const standardPermNames = DefaultRolePermissions[role.name] || [];
+    if (standardPermNames.length > 0) {
+      const standardPerms = await Permission.findAll({
+        where: { name: standardPermNames },
+        transaction,
+      });
 
-    const permissionNames = permissions || rolePermissions[role.name] || [];
+      // Ensure standard permissions are linked to the Role
+      await Promise.all(
+        standardPerms.map((perm) =>
+          RolePermission.findOrCreate({
+            where: { role_id: role.id, permission_id: perm.id },
+            transaction,
+          })
+        )
+      );
+    }
 
-    const perms = await Permission.findAll({ where: { name: permissionNames }, transaction });
-    await Promise.all(perms.map(perm => UserPermission.create({ assignment_id: assignment.id, permission_id: perm.id }, { transaction })));
+    // 2. Handle User-specific Overrides (The Exception)
+    if (permissions && Array.isArray(permissions) && permissions.length > 0) {
+      const overridePerms = await Permission.findAll({
+        where: { name: permissions },
+        transaction,
+      });
+
+      await Promise.all(
+        overridePerms.map((perm) =>
+          UserPermission.create(
+            { assignment_id: assignment.id, permission_id: perm.id },
+            { transaction }
+          )
+        )
+      );
+    }
 
     await user.update({ status: "ACTIVE" }, { transaction });
 
@@ -77,7 +94,7 @@ const unassignUser = async ({ targetUserId, performedBy }) => {
     });
 
     if (!assignment) {
-      throw new AppError("User is not assigned", 404);
+      throw new AppError("errors.user_not_assigned", 404);
     }
 
     // 2️⃣ Prevent unassigning Ethiopia Super Admin
@@ -87,7 +104,7 @@ const unassignUser = async ({ targetUserId, performedBy }) => {
       performedBy.role.name === "ADMIN" &&
       targetUserId === performedBy.id
     ) {
-      throw new AppError("Cannot unassign the Ethiopia Super Admin", 403);
+      throw new AppError("errors.cannot_unassign_super_admin", 403);
     }
 
     // 3️⃣ Remove user permissions
@@ -122,7 +139,7 @@ const unassignUser = async ({ targetUserId, performedBy }) => {
     await transaction.commit();
 
     return {
-      message: "User unassigned successfully",
+      message: "success.user_unassigned",
     };
   } catch (error) {
     await transaction.rollback();

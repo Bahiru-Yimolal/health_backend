@@ -11,24 +11,7 @@ const {
   updateUserPermissions,
   getAllPermissionsService,
   getAllRolesService,
-  createService,
-  updateService,
-  listServices,
-  deleteServiceLogic,
-  listAssignedServices,
-  createServiceRequest,
-  listAssignedRequests,
-  getServicesByUnitService,
-  officerCompleteTask,
-  citizenCompleteTask,
-  rejectServiceRequest,
-  assignRequestToOfficer,
-  confirmServiceRequest,
   getUnitPersonnelDetailsService,
-  listCitizenRequests,
-  getGroupDashboardData,
-  getHeadDashboardData,
-  getUnitGroupLeaders,
   getPersonnelByRoleService } = require("../services/cityService");
 
 
@@ -42,7 +25,7 @@ const createCityController = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: "City created successfully",
+      message: req.t("success.city_created"),
       city: newCity,
     });
   } catch (error) {
@@ -74,7 +57,7 @@ const updateCityController = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: "City updated successfully",
+      message: req.t("success.city_updated"),
       city: updatedCity,
     });
   } catch (error) {
@@ -90,7 +73,7 @@ const deleteCityController = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: "City deleted successfully",
+      message: req.t("success.city_deleted"),
     });
   } catch (error) {
     next(error);
@@ -111,8 +94,8 @@ const assignCityAdminController = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: "City Admin assigned successfully",
-      assignment,
+      message: req.t("success.city_admin_assigned"),
+      data: assignment,
     });
   } catch (error) {
     next(error);
@@ -132,7 +115,7 @@ const createEthiopiaLevelUserController = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: "User assigned to Ethiopia level successfully",
+      message: req.t("success.user_assigned_ethiopia"),
       data: result,
     });
   } catch (error) {
@@ -153,7 +136,7 @@ const unassignUserController = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: result.message,
+      message: req.t(result.message),
     });
   } catch (error) {
     next(error);
@@ -171,8 +154,8 @@ const updateUserPermissionsController = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: "User permissions updated successfully",
-      user: result,
+      message: req.t("success.user_permissions_updated"),
+      data: result,
     });
   } catch (error) {
     next(error);
@@ -192,7 +175,7 @@ const updateEthiopiaLevelUserController = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: "User role and permissions updated successfully",
+      message: req.t("success.user_role_permissions_updated"),
       data: result,
     });
   } catch (error) {
@@ -251,269 +234,6 @@ const getPersonnelByRoleController = async (req, res, next) => {
   }
 };
 
-const createServiceController = async (req, res, next) => {
-  try {
-    const {
-      type,
-      place,
-      duration,
-      quality_standard,
-      delivery_mode,
-      preconditions,
-      groupLeaderIds,
-      paymentAmount,
-      completion_metric,
-    } = req.body;
-
-    const result = await createService({
-      type,
-      place,
-      duration,
-      quality_standard,
-      delivery_mode,
-      preconditions,
-      groupLeaderIds,
-      paymentAmount,
-      completion_metric,
-      actor: req.user,
-    });
-
-    res.status(201).json({
-      success: true,
-      message: "Service created successfully",
-      data: result,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const updateServiceController = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const {
-      type,
-      place,
-      duration,
-      quality_standard,
-      delivery_mode,
-      preconditions,
-      paymentAmount,
-      completion_metric,
-      groupLeaderIds,
-    } = req.body;
-
-    const result = await updateService(id, {
-      type,
-      place,
-      duration,
-      quality_standard,
-      delivery_mode,
-      preconditions,
-      paymentAmount,
-      completion_metric,
-      groupLeaderIds,
-      actor: req.user,
-    });
-
-    res.status(200).json({
-      success: true,
-      message: "Service updated successfully",
-      data: result,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const listServicesController = async (req, res, next) => {
-  try {
-    const unitId = req.user.unit.id;
-    const { page, limit } = req.query;
-
-    const result = await listServices(unitId, {
-      page: parseInt(page) || 1,
-      limit: parseInt(limit) || 10
-    });
-
-    res.status(200).json({
-      success: true,
-      data: result,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const deleteServiceController = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    await deleteServiceLogic(id, req.user);
-
-    res.status(200).json({
-      success: true,
-      message: "Service deleted successfully",
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const listAssignedServicesController = async (req, res, next) => {
-  try {
-    const userId = req.user.id;
-    const { page, limit } = req.query;
-
-    const result = await listAssignedServices(userId, {
-      page: parseInt(page) || 1,
-      limit: parseInt(limit) || 10,
-    });
-
-    res.status(200).json({
-      success: true,
-      data: result,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const createServiceRequestController = async (req, res, next) => {
-  try {
-    const { service_id, user_phone, user_full_name } = req.body;
-    const request = await createServiceRequest({ service_id, user_phone, user_full_name });
-
-    res.status(201).json({
-      success: true,
-      message: "Service request submitted successfully",
-      data: request,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const listAssignedRequestsController = async (req, res, next) => {
-  try {
-    const userId = req.user.id;
-    const roleName = req.user.role.name;
-    const { page, limit, status } = req.query;
-
-    const result = await listAssignedRequests(userId, roleName, req.user.unit.id, {
-      page: parseInt(page) || 1,
-      limit: parseInt(limit) || 10,
-      status,
-    });
-
-    res.status(200).json({
-      success: true,
-      data: result,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const getPublicServicesController = async (req, res, next) => {
-  try {
-    const { unitId } = req.params;
-    const services = await getServicesByUnitService(unitId);
-
-    res.status(200).json({
-      success: true,
-      data: services,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-
-const officerCompleteTaskController = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const { delay_reason } = req.body;
-    const userId = req.user.id;
-    const request = await officerCompleteTask(id, userId, delay_reason);
-
-    res.status(200).json({
-      success: true,
-      message: "Task marked as completed by officer",
-      data: request,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const citizenCompleteTaskController = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const { user_phone } = req.body;
-    const request = await citizenCompleteTask(id, user_phone);
-
-    res.status(200).json({
-      success: true,
-      message: "Task finalized by citizen",
-      data: request,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const rejectServiceRequestController = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const { rejection_reason } = req.body;
-    const userId = req.user.id;
-
-    const request = await rejectServiceRequest(id, userId, rejection_reason);
-
-    res.status(200).json({
-      success: true,
-      message: "Service request rejected successfully",
-      data: request,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const assignRequestToOfficerController = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const { officer_id } = req.body;
-    const userId = req.user.id; // Group Leader
-
-    const request = await assignRequestToOfficer(id, userId, officer_id);
-
-    res.status(200).json({
-      success: true,
-      message: "Task assigned to officer successfully",
-      data: request,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const confirmServiceRequestController = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const userId = req.user.id;
-
-    const request = await confirmServiceRequest(id, userId);
-
-    res.status(200).json({
-      success: true,
-      message: "Service request confirmed and started successfully",
-      data: request,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
 
 const getUnitPersonnelDetailsController = async (req, res, next) => {
   try {
@@ -530,75 +250,6 @@ const getUnitPersonnelDetailsController = async (req, res, next) => {
   }
 };
 
-const listCitizenRequestsController = async (req, res, next) => {
-  try {
-    const { phone, page, limit, status } = req.query;
-
-    const result = await listCitizenRequests(phone, {
-      page: parseInt(page) || 1,
-      limit: parseInt(limit) || 10,
-      status,
-    });
-
-    res.status(200).json({
-      success: true,
-      data: result,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const getHeadDashboardController = async (req, res, next) => {
-  try {
-    const { startDate, endDate, page, limit } = req.query;
-    const result = await getHeadDashboardData(req.user, {
-      startDate,
-      endDate,
-      page: parseInt(page) || 1,
-      limit: parseInt(limit) || 10,
-    });
-
-    res.status(200).json({
-      success: true,
-      data: result,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const getGroupDashboardController = async (req, res, next) => {
-  try {
-    const { startDate, endDate, page, limit, groupLeaderId } = req.query;
-    const result = await getGroupDashboardData(req.user, {
-      startDate,
-      endDate,
-      page: parseInt(page) || 1,
-      limit: parseInt(limit) || 10,
-      groupLeaderId,
-    });
-
-    res.status(200).json({
-      success: true,
-      data: result,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const getUnitGroupLeadersController = async (req, res, next) => {
-  try {
-    const result = await getUnitGroupLeaders(req.user.unit.id);
-    res.status(200).json({
-      success: true,
-      data: result,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
 
 module.exports = {
   createCityController,
@@ -613,22 +264,6 @@ module.exports = {
   getAllPermissionsController,
   getAllRolesController,
   getPersonnelByRoleController,
-  createServiceController,
-  updateServiceController,
-  listServicesController,
-  deleteServiceController,
-  listAssignedServicesController,
-  createServiceRequestController,
-  listAssignedRequestsController,
-  getPublicServicesController,
-  officerCompleteTaskController,
-  citizenCompleteTaskController,
-  rejectServiceRequestController,
-  assignRequestToOfficerController,
-  confirmServiceRequestController,
   getUnitPersonnelDetailsController,
-  listCitizenRequestsController,
-  getHeadDashboardController,
-  getGroupDashboardController,
-  getUnitGroupLeadersController,
+
 };

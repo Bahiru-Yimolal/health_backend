@@ -4,7 +4,7 @@ const Role = require("../models/roleModel");
 const { AppError } = require("../middlewares/errorMiddleware");
 const { Op } = require("sequelize");
 const { assignUserToUnit } = require("./assignnmentService");
-const { UserAssignment, User, Permission, UserPermission, Service, ServiceAssignment, ServiceRequest } = require("../models");
+const { UserAssignment, User, Permission, UserPermission } = require("../models");
 const sequelize = require("../config/database");
 
 const createCityService = async (name, user) => {
@@ -17,7 +17,7 @@ const createCityService = async (name, user) => {
     });
 
     if (existingCity) {
-      throw new AppError("City with this name already exists", 400);
+      throw new AppError("errors.city_exists", 400);
     }
 
     // Create the city
@@ -30,7 +30,7 @@ const createCityService = async (name, user) => {
     return newCity;
   } catch (error) {
     if (error instanceof AppError) throw error;
-    throw new AppError("Database error: Unable to create city", 500);
+    throw new AppError("errors.internal_error", 500);
   }
 };
 
@@ -56,7 +56,7 @@ const listCitiesService = async () => {
     return cities;
   } catch (error) {
     if (error instanceof AppError) throw error;
-    throw new AppError("Database error: Unable to fetch cities", 500);
+    throw new AppError("errors.fetch_cities_error", 500);
   }
 };
 
@@ -68,7 +68,7 @@ const updateCityService = async (cityId, name) => {
       where: { id: cityId, level: "CITY" },
     });
 
-    if (!city) throw new AppError("City not found", 404);
+    if (!city) throw new AppError("errors.city_not_found", 404);
 
 
 
@@ -77,7 +77,7 @@ const updateCityService = async (cityId, name) => {
       where: { name, level: "CITY", id: { [Op.ne]: cityId } },
     });
 
-    if (duplicate) throw new AppError("Another city with this name exists", 400);
+    if (duplicate) throw new AppError("errors.city_exists", 400);
 
     city.name = name;
     await city.save();
@@ -85,7 +85,7 @@ const updateCityService = async (cityId, name) => {
     return city;
   } catch (error) {
     if (error instanceof AppError) throw error;
-    throw new AppError("Database error: Unable to update city", 500);
+    throw new AppError("errors.internal_error", 500);
   }
 };
 
@@ -96,7 +96,7 @@ const deleteCityService = async (cityId, user) => {
       where: { id: cityId, level: "CITY", parent_id: user.unit.id },
     });
 
-    if (!city) throw new AppError("City not found", 404);
+    if (!city) throw new AppError("errors.city_not_found", 404);
 
     // Check for sub-cities
     const subCityCount = await AdministrativeUnit.count({
@@ -105,17 +105,19 @@ const deleteCityService = async (cityId, user) => {
 
     if (subCityCount > 0) {
       throw new AppError(
-        "Cannot delete city with sub-cities. Delete sub-cities first.",
+        "errors.city_has_subcities",
         400
       );
     }
 
+    // Because the `AdministrativeUnit` model has `paranoid: true`,
+    // calling `.destroy()` implicitly performs a soft delete instead of hard delete.
     await city.destroy();
 
     return true;
   } catch (error) {
     if (error instanceof AppError) throw error;
-    throw new AppError("Database error: Unable to delete city", 500);
+    throw new AppError("errors.internal_error", 500);
   }
 };
 
@@ -129,13 +131,13 @@ const assignCityAdminService = async ({
   // 2️⃣ Validate city
   const city = await AdministrativeUnit.findByPk(cityId);
   if (!city || city.level !== "CITY") {
-    throw new AppError("Invalid CITY ID", 400);
+    throw new AppError("errors.invalid_city_id", 400);
   }
 
   // 3️⃣ Fetch ADMIN role
   const [adminRole] = await Role.findOrCreate({
     where: { name: "ADMIN" },
-    defaults: { description: "Admin role" },
+    defaults: { description: "fields.role_description_admin" },
   });
 
 
@@ -164,14 +166,14 @@ const createEthiopiaLevelUserService = async ({
   });
 
   if (!ethiopiaUnit) {
-    throw new AppError("Ethiopia unit not found", 500);
+    throw new AppError("errors.ethiopia_unit_not_found", 500);
   }
 
   // 3️⃣ Validate role
 
   const [role] = await Role.findOrCreate({
     where: { name: roleName },
-    defaults: { description: "role created" },
+    defaults: { description: "fields.role_description_default" },
   });
 
   // 4️⃣ Assign user
@@ -197,7 +199,7 @@ const updateUserPermissions = async ({ targetUserId, permissions = null }) => {
     });
 
     if (!assignment) {
-      throw new AppError("User is not assigned", 404);
+      throw new AppError("errors.user_not_assigned", 404);
     }
 
     // 2️⃣ Find user and role
@@ -231,7 +233,7 @@ const updateUserPermissions = async ({ targetUserId, permissions = null }) => {
     return {
       userId: user.user_id,
       role: role.name,
-      permissions: permissions,
+      overrides: permissions, // Clarify that these are overrides
     };
   } catch (error) {
     await transaction.rollback();
@@ -255,7 +257,7 @@ const updateEthiopiaLevelUserService = async ({
     });
 
     if (!ethiopiaUnit) {
-      throw new AppError("Ethiopia unit not found", 500);
+      throw new AppError("errors.ethiopia_unit_not_found", 500);
     }
 
     // 2️⃣ Get existing assignment
@@ -268,13 +270,13 @@ const updateEthiopiaLevelUserService = async ({
     });
 
     if (!assignment) {
-      throw new AppError("User is not assigned to Ethiopia level", 404);
+      throw new AppError("errors.user_not_assigned_ethiopia", 404);
     }
 
     // 3️⃣ Get / create role
     const [role] = await Role.findOrCreate({
       where: { name: roleName },
-      defaults: { description: "role created" },
+      defaults: { description: "fields.role_description_default" },
       transaction,
     });
 
@@ -282,49 +284,50 @@ const updateEthiopiaLevelUserService = async ({
     assignment.role_id = role.id;
     await assignment.save({ transaction });
 
-    // 5️⃣ Default permissions by role
-    const rolePermissions = {
-      ADMIN: [
-        "CREATE_FOLDER",
-        "READ_FOLDER",
-        "UPDATE_FOLDER",
-        "DELETE_FOLDER",
-        "ADMIN_PERMISSIONS",
-      ],
-      OFFICER: [
-        "CREATE_FOLDER",
-        "READ_FOLDER",
-        "UPDATE_FOLDER",
-        "DELETE_FOLDER",
-      ],
-      ANALYST: ["READ_FOLDER"],
-    };
+    // 5️⃣ Manage Role-level Permissions (The Standard)
+    const { Roles, DefaultRolePermissions } = require("../config/rolePermissions");
+    const rolePermNames = DefaultRolePermissions[role.name] || [];
+    if (rolePermNames.length > 0) {
+      const standardPerms = await Permission.findAll({
+        where: { name: rolePermNames },
+        transaction,
+      });
 
-    const permissionNames = permissions || rolePermissions[role.name] || [];
+      await Promise.all(
+        standardPerms.map((p) =>
+          RolePermission.findOrCreate({
+            where: { role_id: role.id, permission_id: p.id },
+            transaction,
+          })
+        )
+      );
+    }
 
-    // 6️⃣ Clear existing permissions
+    // 6️⃣ Manage User-level Overrides (The Exception)
+    // Clear existing overrides for this assignment first
     await UserPermission.destroy({
       where: { assignment_id: assignment.id },
       transaction,
     });
 
-    // 7️⃣ Assign new permissions
-    const perms = await Permission.findAll({
-      where: { name: permissionNames },
-      transaction,
-    });
+    if (permissions && Array.isArray(permissions)) {
+      const overridePerms = await Permission.findAll({
+        where: { name: permissions },
+        transaction,
+      });
 
-    await Promise.all(
-      perms.map((perm) =>
-        UserPermission.create(
-          {
-            assignment_id: assignment.id,
-            permission_id: perm.id,
-          },
-          { transaction }
+      await Promise.all(
+        overridePerms.map((perm) =>
+          UserPermission.create(
+            {
+              assignment_id: assignment.id,
+              permission_id: perm.id,
+            },
+            { transaction }
+          )
         )
-      )
-    );
+      );
+    }
 
     await transaction.commit();
 
@@ -332,7 +335,7 @@ const updateEthiopiaLevelUserService = async ({
       userId,
       unit: "ETHIOPIA",
       role: role.name,
-      permissions: permissionNames,
+      overrides: permissions || [],
     };
   } catch (error) {
     await transaction.rollback();
@@ -359,7 +362,7 @@ const getPersonnelByRoleService = async ({ unitId, roleName }) => {
 
     return assignments.map(a => a.User);
   } catch (error) {
-    throw new AppError("Database error: Unable to fetch personnel", 500);
+    throw new AppError("errors.fetch_personnel_error", 500);
   }
 };
 
@@ -394,7 +397,7 @@ const getUnitPersonnelDetailsService = async (unitId) => {
       permissions: a.UserPermissions.map(up => up.Permission)
     }));
   } catch (error) {
-    throw new AppError("Database error: Unable to fetch unit personnel details", 500);
+    throw new AppError("errors.fetch_personnel_details_error", 500);
   }
 };
 
@@ -407,7 +410,7 @@ const getAllPermissionsService = async () => {
 
     return permissions;
   } catch (error) {
-    throw new AppError("Database error: Unable to fetch permissions", 500);
+    throw new AppError("errors.fetch_permissions_error", 500);
   }
 };
 
@@ -420,962 +423,7 @@ const getAllRolesService = async () => {
 
     return roles;
   } catch (error) {
-    throw new AppError("Database error: Unable to fetch roles", 500);
-  }
-};
-
-
-/**
- * Create a new service with optional group leader assignment
- */
-const createService = async ({
-  type,
-  place,
-  duration,
-  quality_standard,
-  delivery_mode,
-  preconditions,
-  paymentAmount,
-  completion_metric,
-  groupLeaderIds = [],
-  actor,
-}) => {
-  const transaction = await sequelize.transaction();
-
-  try {
-    // 0. Check if service with same type already exists in this unit
-    const existingService = await Service.findOne({
-      where: { type, unit_id: actor.unit.id },
-      transaction,
-    });
-
-    if (existingService) {
-      throw new AppError(`A service with the name "${type}" already exists in your unit.`, 400);
-    }
-
-    // 1. Create the Service
-    const service = await Service.create(
-      {
-        type,
-        place,
-        duration,
-        quality_standard,
-        delivery_mode,
-        preconditions,
-        paymentAmount,
-        completion_metric,
-        unit_id: actor.unit.id, // Derived from Admin's token
-        created_by: actor.id,
-      },
-      { transaction }
-    );
-
-    // 2. If groupLeaderIds are provided, create assignments
-    let assignments = [];
-    if (groupLeaderIds && groupLeaderIds.length > 0) {
-      for (const groupLeaderId of groupLeaderIds) {
-        // Optional: Verify if the user is actually a GL in this unit
-        const isGL = await UserAssignment.findOne({
-          where: { user_id: groupLeaderId, unit_id: actor.unit.id },
-          include: [{ model: Role, where: { name: "GROUP_LEADER" } }],
-          transaction,
-        });
-
-        if (!isGL) {
-          throw new AppError(`The provided Group Leader ID ${groupLeaderId} is invalid or not a Group Leader in your unit`, 400);
-        }
-
-        const assignment = await ServiceAssignment.create(
-          {
-            service_id: service.id,
-            group_leader_id: groupLeaderId,
-            is_active: true,
-          },
-          { transaction }
-        );
-        assignments.push(assignment);
-      }
-    }
-
-    await transaction.commit();
-
-    return {
-      service,
-      assignments,
-    };
-  } catch (error) {
-    await transaction.rollback();
-    throw error;
-  }
-};
-
-/**
- * Update an existing service and its group leader assignments
- */
-const updateService = async (id, {
-  type,
-  place,
-  duration,
-  quality_standard,
-  delivery_mode,
-  preconditions,
-  paymentAmount,
-  completion_metric,
-  groupLeaderIds,
-  actor,
-}) => {
-  const transaction = await sequelize.transaction();
-
-  try {
-    // 1. Find the service
-    const service = await Service.findByPk(id, { transaction });
-    if (!service) {
-      throw new AppError("Service not found", 404);
-    }
-
-    // 2. Security Check: Only admins from the same unit (or higher) should update
-    if (service.unit_id !== actor.unit.id) {
-      throw new AppError("You can only update services within your own unit", 403);
-    }
-
-    // 3. Uniqueness Check: If type is being updated, check if new name already exists in this unit
-    if (type && type !== service.type) {
-      const duplicateService = await Service.findOne({
-        where: { type, unit_id: actor.unit.id, id: { [Op.ne]: id } },
-        transaction,
-      });
-
-      if (duplicateService) {
-        throw new AppError(`Another service with the name "${type}" already exists in your unit.`, 400);
-      }
-    }
-
-    // 4. Update Service Fields
-    await service.update(
-      {
-        type: type || service.type,
-        place: place || service.place,
-        duration: duration || service.duration,
-        quality_standard: quality_standard !== undefined ? quality_standard : service.quality_standard,
-        delivery_mode: delivery_mode || service.delivery_mode,
-        preconditions: preconditions || service.preconditions,
-        paymentAmount: paymentAmount !== undefined ? paymentAmount : service.paymentAmount,
-        completion_metric: completion_metric || service.completion_metric,
-      },
-      { transaction }
-    );
-
-    // 5. Update Assignments (if groupLeaderIds is provided)
-    let assignments = [];
-    if (groupLeaderIds !== undefined) {
-      // a. Delete existing assignments
-      await ServiceAssignment.destroy({
-        where: { service_id: id },
-        transaction,
-      });
-
-      // b. Create new ones if array is not empty
-      if (groupLeaderIds && groupLeaderIds.length > 0) {
-        for (const groupLeaderId of groupLeaderIds) {
-          // Verify if the user is a GL in this unit
-          const isGL = await UserAssignment.findOne({
-            where: { user_id: groupLeaderId, unit_id: actor.unit.id },
-            include: [{ model: Role, where: { name: "GROUP_LEADER" } }],
-            transaction,
-          });
-
-          if (!isGL) {
-            throw new AppError(`The provided Group Leader ID ${groupLeaderId} is invalid or not a Group Leader in your unit`, 400);
-          }
-
-          const assignment = await ServiceAssignment.create(
-            {
-              service_id: id,
-              group_leader_id: groupLeaderId,
-              is_active: true,
-            },
-            { transaction }
-          );
-          assignments.push(assignment);
-        }
-      }
-    } else {
-      // Fetch existing if not updating
-      assignments = await ServiceAssignment.findAll({ where: { service_id: id }, transaction });
-    }
-
-    await transaction.commit();
-
-    return {
-      service,
-      assignments,
-    };
-  } catch (error) {
-    await transaction.rollback();
-    throw error;
-  }
-};
-
-/**
- * List all services within a specific unit with pagination
- */
-const listServices = async (unitId, { page = 1, limit = 10 }) => {
-  try {
-    const offset = (page - 1) * limit;
-
-    const { count, rows } = await Service.findAndCountAll({
-      where: { unit_id: unitId },
-      include: [
-        {
-          model: ServiceAssignment,
-          include: [
-            {
-              model: User,
-              attributes: ["user_id", "first_name", "last_name", "email", "phone_number"],
-            },
-          ],
-        },
-      ],
-      limit: parseInt(limit),
-      offset: parseInt(offset),
-      order: [["createdAt", "DESC"]],
-      distinct: true, // Ensures count is accurate with includes
-    });
-
-    return {
-      totalItems: count,
-      totalPages: Math.ceil(count / limit),
-      currentPage: parseInt(page),
-      services: rows,
-    };
-  } catch (error) {
-    throw new AppError("Database error: Unable to fetch services", 500);
-  }
-};
-
-/**
- * Delete a service if it has no associated requests
- */
-const deleteServiceLogic = async (id, actor) => {
-  const transaction = await sequelize.transaction();
-
-  try {
-    // 1. Find the service
-    const service = await Service.findByPk(id, { transaction });
-    if (!service) {
-      throw new AppError("Service not found", 404);
-    }
-
-    // 2. Security Check
-    if (service.unit_id !== actor.unit.id) {
-      throw new AppError("You can only delete services within your own unit", 403);
-    }
-
-    // 3. Check for associated requests
-    const requestCount = await ServiceRequest.count({
-      where: { service_id: id },
-      transaction
-    });
-
-    if (requestCount > 0) {
-      throw new AppError("Cannot delete service: It has associated service requests. Consider deactivating assignments instead.", 400);
-    }
-
-    // 4. Delete assignments first
-    await ServiceAssignment.destroy({
-      where: { service_id: id },
-      transaction,
-    });
-
-    // 5. Delete the service
-    await service.destroy({ transaction });
-
-    await transaction.commit();
-    return true;
-  } catch (error) {
-    await transaction.rollback();
-    throw error;
-  }
-};
-
-/**
- * List all services assigned to a specific group leader with pagination
- */
-const listAssignedServices = async (userId, { page = 1, limit = 10 }) => {
-  try {
-    const offset = (page - 1) * limit;
-
-    const { count, rows } = await ServiceAssignment.findAndCountAll({
-      where: { group_leader_id: userId, is_active: true },
-      include: [
-        {
-          model: Service,
-          include: [
-            {
-              model: AdministrativeUnit,
-              attributes: ["name", "level"],
-            },
-          ],
-        },
-      ],
-      limit: parseInt(limit),
-      offset: parseInt(offset),
-      order: [["createdAt", "DESC"]],
-    });
-
-    return {
-      totalItems: count,
-      totalPages: Math.ceil(count / limit),
-      currentPage: parseInt(page),
-      services: rows,
-    };
-  } catch (error) {
-    throw new AppError("Database error: Unable to fetch assigned services", 500);
-  }
-};
-
-/**
- * Citizen initiates a service request
- */
-const createServiceRequest = async ({ service_id, user_phone, user_full_name }) => {
-  try {
-    // 1. Verify service exists
-    const service = await Service.findByPk(service_id);
-    if (!service) {
-      throw new AppError("The requested service does not exist", 404);
-    }
-
-    // 2. Check for active/pending requests from this phone for this service
-    const existingRequest = await ServiceRequest.findOne({
-      where: {
-        service_id,
-        user_phone,
-        status: { [Op.in]: ["PENDING", "CONFIRMED", "IN_PROGRESS"] },
-      },
-    });
-
-    if (existingRequest) {
-      throw new AppError("You already have an active request for this service. Please wait for the current one to be processed.", 400);
-    }
-
-    // 3. Create the request
-    const request = await ServiceRequest.create({
-      service_id,
-      user_phone,
-      user_full_name,
-      status: "PENDING",
-    });
-
-    return request;
-  } catch (error) {
-    if (error instanceof AppError) throw error;
-    throw new AppError("Internal server error during request initiation", 500);
-  }
-};
-
-/**
- * List all service requests for services managed by a specific group leader
- */
-const listAssignedRequests = async (userId, roleName, unitId, { page = 1, limit = 10, status }) => {
-  try {
-    const offset = (page - 1) * limit;
-    let whereClause = {};
-
-    if (status) {
-      whereClause.status = status;
-    }
-
-    if (roleName === "GROUP_LEADER") {
-      // 1. Get all service IDs assigned to this GL
-      const assignments = await ServiceAssignment.findAll({
-        where: { group_leader_id: userId, is_active: true },
-        attributes: ["service_id"],
-      });
-
-      const assignedServiceIds = assignments.map((a) => a.service_id);
-
-      if (assignedServiceIds.length === 0) {
-        return {
-          totalItems: 0,
-          totalPages: 0,
-          currentPage: parseInt(page),
-          requests: [],
-        };
-      }
-      whereClause.service_id = { [Op.in]: assignedServiceIds };
-    } else if (roleName === "OFFICER") {
-      // 2. Officers see only their specifically assigned requests
-      whereClause.officer_id = userId;
-    } else if (roleName === "HEAD") {
-      // 3. HEAD sees all requests in their unit
-      // This is handled by the include filter below if we add unit_id requirement
-      whereClause["$Service.unit_id$"] = unitId;
-    } else {
-      // Fallback for other roles
-      return {
-        totalItems: 0,
-        totalPages: 0,
-        currentPage: parseInt(page),
-        requests: [],
-      };
-    }
-
-    // Fetch requests logic
-    const { count, rows } = await ServiceRequest.findAndCountAll({
-      where: whereClause,
-      include: [
-        {
-          model: Service,
-          attributes: ["type", "place", "duration"],
-        },
-      ],
-      limit: parseInt(limit),
-      offset: parseInt(offset),
-      order: [["createdAt", "DESC"]],
-    });
-
-    return {
-      totalItems: count,
-      totalPages: Math.ceil(count / limit),
-      currentPage: parseInt(page),
-      requests: rows,
-    };
-  } catch (error) {
-    throw new AppError("Database error: Unable to fetch assigned requests", 500);
-  }
-};
-
-/**
- * Public: Get services available in a specific Administrative Unit
- */
-const getServicesByUnitService = async (unitId) => {
-  try {
-    const unit = await AdministrativeUnit.findByPk(unitId, {
-      attributes: ["id", "name", "level"],
-    });
-
-    if (!unit) {
-      throw new AppError("Administrative unit not found", 404);
-    }
-
-    const services = await Service.findAll({
-      where: { unit_id: unitId },
-      attributes: ["id", "type", "place", "duration", "quality_standard", "delivery_mode", "preconditions", "paymentAmount"],
-      order: [["type", "ASC"]],
-    });
-
-    return {
-      unit,
-      services,
-    };
-  } catch (error) {
-    if (error instanceof AppError) throw error;
-    throw new AppError("Database error: Unable to fetch services for this unit", 500);
-  }
-};
-
-
-/**
- * Private helper to calculate SLA and finalize request if conditions are met
- */
-const _finalizeRequestPerformance = async (request, transaction) => {
-  const service = await Service.findByPk(request.service_id, { transaction });
-  if (!service) return;
-
-  const metric = service.completion_metric;
-  let finalTime = null;
-
-  if (metric === "OFFICER" && request.officer_completed_at) {
-    finalTime = request.officer_completed_at;
-  } else if (metric === "CITIZEN" && request.citizen_completed_at) {
-    finalTime = request.citizen_completed_at;
-  } else if (metric === "BOTH_AVERAGE" && request.officer_completed_at && request.citizen_completed_at) {
-    finalTime = new Date((request.officer_completed_at.getTime() + request.citizen_completed_at.getTime()) / 2);
-  }
-
-  // If we have enough data to finalize
-  if (finalTime) {
-    const deadline = new Date(request.start_time.getTime() + service.duration * 3600000); // duration in hours
-    const isLate = finalTime > deadline;
-
-    await request.update({
-      final_completion_time: finalTime,
-      completion_status: isLate ? "RED" : "GREEN",
-      status: "COMPLETED",
-    }, { transaction });
-  }
-};
-
-/**
- * Officer/GL marks a task as completed
- */
-const officerCompleteTask = async (requestId, userId, delayReason) => {
-  const transaction = await sequelize.transaction();
-  try {
-    const request = await ServiceRequest.findByPk(requestId, { transaction });
-    if (!request) throw new AppError("Service request not found", 404);
-
-    if (request.status !== "IN_PROGRESS") {
-      throw new AppError("Only tasks in progress can be completed", 400);
-    }
-
-    // Verify ownership/assignment
-    let isAuthorized = request.officer_id === userId;
-
-    if (!isAuthorized) {
-      const assignment = await ServiceAssignment.findOne({
-        where: { service_id: request.service_id, group_leader_id: userId, is_active: true },
-        transaction,
-      });
-      if (assignment) isAuthorized = true;
-    }
-
-    if (!isAuthorized) {
-      throw new AppError("You are not authorized to complete this task", 403);
-    }
-
-    await request.update({
-      officer_completed_at: new Date(),
-      delay_reason: delayReason,
-    }, { transaction });
-
-    await _finalizeRequestPerformance(request, transaction);
-
-    await transaction.commit();
-    return request;
-  } catch (error) {
-    await transaction.rollback();
-    throw error;
-  }
-};
-
-/**
- * Citizen marks a task as completed (Verification)
- */
-const citizenCompleteTask = async (requestId, phone) => {
-  const transaction = await sequelize.transaction();
-  try {
-    const request = await ServiceRequest.findByPk(requestId, { transaction });
-    if (!request) throw new AppError("Service request not found", 404);
-
-    if (request.user_phone !== phone) {
-      throw new AppError("Unauthorized: This request does not belong to this phone number", 403);
-    }
-
-    if (request.status !== "IN_PROGRESS") {
-      throw new AppError("Task is not in a state that can be citizen-completed", 400);
-    }
-
-    await request.update({
-      citizen_completed_at: new Date(),
-    }, { transaction });
-
-    await _finalizeRequestPerformance(request, transaction);
-
-    await transaction.commit();
-    return request;
-  } catch (error) {
-    await transaction.rollback();
-    throw error;
-  }
-};
-
-/**
- * Group Leader rejects a service request
- */
-const rejectServiceRequest = async (requestId, userId, rejectionReason) => {
-  const transaction = await sequelize.transaction();
-  try {
-    const request = await ServiceRequest.findByPk(requestId, {
-      include: [{ model: Service }],
-      transaction,
-    });
-
-    if (!request) throw new AppError("Service request not found", 404);
-
-    // Security: Verify if the user is a GL assigned to this service
-    const assignment = await ServiceAssignment.findOne({
-      where: { service_id: request.service_id, group_leader_id: userId, is_active: true },
-      transaction,
-    });
-
-    if (!assignment) {
-      throw new AppError("Unauthorized: You are not assigned to manage this service", 403);
-    }
-
-    if (!["PENDING", "CONFIRMED"].includes(request.status)) {
-      throw new AppError(`Cannot reject a request in ${request.status} status`, 400);
-    }
-
-    await request.update({
-      status: "REJECTED",
-      rejection_reason: rejectionReason,
-    }, { transaction });
-
-    await transaction.commit();
-    return request;
-  } catch (error) {
-    await transaction.rollback();
-    throw error;
-  }
-};
-
-/**
- * Group Leader assigns a request to an Officer
- */
-const assignRequestToOfficer = async (requestId, userId, officerId) => {
-  const transaction = await sequelize.transaction();
-  try {
-    const request = await ServiceRequest.findByPk(requestId, {
-      include: [{ model: Service }],
-      transaction,
-    });
-
-    if (!request) throw new AppError("Service request not found", 404);
-
-    // 1. Security: Verify if the actor (GL) is assigned to this service
-    const assignment = await ServiceAssignment.findOne({
-      where: { service_id: request.service_id, group_leader_id: userId, is_active: true },
-      transaction,
-    });
-
-    if (!assignment) {
-      throw new AppError("Unauthorized: You are not assigned to manage this service", 403);
-    }
-
-    // 2. Verify: If officerId is provided, check if they are an OFFICER in the same unit
-    if (officerId) {
-      const officerAssignment = await UserAssignment.findOne({
-        where: { user_id: officerId, unit_id: request.Service.unit_id },
-        include: [{ model: Role, where: { name: "OFFICER" } }],
-        transaction,
-      });
-
-      if (!officerAssignment) {
-        throw new AppError("Invalid Officer: The provided user is not an officer in this unit", 400);
-      }
-    }
-
-    // 3. Update Request: Assign officer and transition status if needed
-    const updates = { officer_id: officerId };
-
-    // If starting for the first time
-    if (["PENDING", "CONFIRMED"].includes(request.status)) {
-      const startTime = new Date();
-      updates.status = "IN_PROGRESS";
-      updates.group_leader_id = userId; // The GL who acknowledged it
-      updates.start_time = startTime;
-      updates.expected_completion = new Date(startTime.getTime() + request.Service.duration * 3600000);
-    }
-
-    await request.update(updates, { transaction });
-
-    await transaction.commit();
-    return request;
-  } catch (error) {
-    await transaction.rollback();
-    throw error;
-  }
-};
-
-/**
- * Group Leader confirms a service request to provide the service themselves
- */
-const confirmServiceRequest = async (requestId, userId) => {
-  const transaction = await sequelize.transaction();
-  try {
-    const request = await ServiceRequest.findByPk(requestId, {
-      include: [{ model: Service }],
-      transaction,
-    });
-
-    if (!request) throw new AppError("Service request not found", 404);
-
-    // 1. Security: Verify if the actor (GL) is assigned to this service
-    const assignment = await ServiceAssignment.findOne({
-      where: { service_id: request.service_id, group_leader_id: userId, is_active: true },
-      transaction,
-    });
-
-    if (!assignment) {
-      throw new AppError("Unauthorized: You are not assigned to manage this service", 403);
-    }
-
-    // 2. Check status logic
-    if (!["PENDING", "CONFIRMED"].includes(request.status)) {
-      throw new AppError(`Cannot confirm a request in ${request.status} status`, 400);
-    }
-
-    // 3. Update Request: Transition status to IN_PROGRESS and start timer
-    const startTime = new Date();
-    await request.update({
-      status: "IN_PROGRESS",
-      group_leader_id: userId,
-      start_time: startTime,
-      expected_completion: new Date(startTime.getTime() + request.Service.duration * 3600000),
-      officer_id: null, // No officer assigned, GL is doing it
-    }, { transaction });
-
-    await transaction.commit();
-    return request;
-  } catch (error) {
-    await transaction.rollback();
-    throw error;
-  }
-};
-
-/**
- * Head level dashboard data: Aggregate counts and paginated requests
- */
-const getHeadDashboardData = async (user, { startDate, endDate, page = 1, limit = 10 }) => {
-  try {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    end.setHours(23, 59, 59, 999);
-
-    // 1. Base where clause (Only his unit)
-    const whereClause = {
-      createdAt: { [Op.between]: [start, end] },
-      "$Service.unit_id$": user.unit.id,
-    };
-
-    // 2. Aggregate counts
-    const summaryResult = await ServiceRequest.findAll({
-      where: whereClause,
-      include: [{ model: Service, attributes: [] }],
-      attributes: [
-        [sequelize.fn("COUNT", sequelize.col("ServiceRequest.id")), "totalRequests"],
-        [
-          sequelize.literal(`COUNT(CASE WHEN "ServiceRequest"."status" = 'PENDING' THEN 1 END)`),
-          "totalPending",
-        ],
-        [
-          sequelize.literal(`COUNT(CASE WHEN "ServiceRequest"."status" = 'REJECTED' THEN 1 END)`),
-          "totalRejected",
-        ],
-        [
-          sequelize.literal(
-            `COUNT(CASE WHEN "ServiceRequest"."status" IN ('IN_PROGRESS', 'CONFIRMED') THEN 1 END)`
-          ),
-          "totalInProgress",
-        ],
-        [
-          sequelize.literal(`COUNT(CASE WHEN "ServiceRequest"."status" = 'COMPLETED' THEN 1 END)`),
-          "totalCompleted",
-        ],
-        [
-          sequelize.literal(`COUNT(CASE WHEN "ServiceRequest"."completion_status" = 'GREEN' THEN 1 END)`),
-          "totalGreen",
-        ],
-        [
-          sequelize.literal(`COUNT(CASE WHEN "ServiceRequest"."completion_status" = 'RED' THEN 1 END)`),
-          "totalRed",
-        ],
-      ],
-      raw: true,
-    });
-
-    // 3. Paginated Requests
-    const offset = (page - 1) * limit;
-    const { rows, count } = await ServiceRequest.findAndCountAll({
-      where: whereClause,
-      include: [
-        {
-          model: Service,
-          attributes: ["type", "place"],
-          include: [{ model: AdministrativeUnit, attributes: ["name", "level"] }],
-        },
-      ],
-      limit: parseInt(limit),
-      offset: parseInt(offset),
-      order: [["createdAt", "DESC"]],
-    });
-
-    // 4. Get all services for this unit
-    const services = await Service.findAll({
-      where: { unit_id: user.unit.id },
-      attributes: ["id", "type", "place", "duration", "quality_standard", "delivery_mode", "paymentAmount"],
-    });
-
-    return {
-      summary: summaryResult[0] || {
-        totalRequests: 0,
-        totalPending: 0,
-        totalRejected: 0,
-        totalInProgress: 0,
-        totalCompleted: 0,
-        totalGreen: 0,
-        totalRed: 0,
-      },
-      services,
-      requests: {
-        totalItems: count,
-        totalPages: Math.ceil(count / limit),
-        currentPage: parseInt(page),
-        rows,
-      },
-    };
-  } catch (error) {
-    if (error instanceof AppError) throw error;
-    throw new AppError("Database error: Unable to fetch dashboard data", 500);
-  }
-};
-
-/**
- * Group level dashboard data: Filtered by specific Group Leader within the unit
- */
-const getGroupDashboardData = async (user, { startDate, endDate, page = 1, limit = 10, groupLeaderId }) => {
-  try {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    end.setHours(23, 59, 59, 999);
-
-    // 1. Base where clause (Unit + Group Leader)
-    const whereClause = {
-      createdAt: { [Op.between]: [start, end] },
-      "$Service.unit_id$": user.unit.id,
-      group_leader_id: groupLeaderId,
-    };
-
-    // 2. Aggregate counts
-    const summaryResult = await ServiceRequest.findAll({
-      where: whereClause,
-      include: [{ model: Service, attributes: [] }],
-      attributes: [
-        [sequelize.fn("COUNT", sequelize.col("ServiceRequest.id")), "totalRequests"],
-        [
-          sequelize.literal(`COUNT(CASE WHEN "ServiceRequest"."status" = 'PENDING' THEN 1 END)`),
-          "totalPending",
-        ],
-        [
-          sequelize.literal(`COUNT(CASE WHEN "ServiceRequest"."status" = 'REJECTED' THEN 1 END)`),
-          "totalRejected",
-        ],
-        [
-          sequelize.literal(
-            `COUNT(CASE WHEN "ServiceRequest"."status" IN ('IN_PROGRESS', 'CONFIRMED') THEN 1 END)`
-          ),
-          "totalInProgress",
-        ],
-        [
-          sequelize.literal(`COUNT(CASE WHEN "ServiceRequest"."status" = 'COMPLETED' THEN 1 END)`),
-          "totalCompleted",
-        ],
-        [
-          sequelize.literal(`COUNT(CASE WHEN "ServiceRequest"."completion_status" = 'GREEN' THEN 1 END)`),
-          "totalGreen",
-        ],
-        [
-          sequelize.literal(`COUNT(CASE WHEN "ServiceRequest"."completion_status" = 'RED' THEN 1 END)`),
-          "totalRed",
-        ],
-      ],
-      raw: true,
-    });
-
-    // 3. Paginated Requests
-    const offset = (page - 1) * limit;
-    const { rows, count } = await ServiceRequest.findAndCountAll({
-      where: whereClause,
-      include: [
-        {
-          model: Service,
-          attributes: ["type", "place"],
-          include: [{ model: AdministrativeUnit, attributes: ["name", "level"] }],
-        },
-      ],
-      limit: parseInt(limit),
-      offset: parseInt(offset),
-      order: [["createdAt", "DESC"]],
-    });
-
-    // 4. Get all services for this unit (for ref)
-    const services = await Service.findAll({
-      where: { unit_id: user.unit.id },
-      attributes: ["id", "type", "place", "duration", "quality_standard", "delivery_mode", "paymentAmount"],
-    });
-
-    return {
-      summary: summaryResult[0] || {
-        totalRequests: 0,
-        totalPending: 0,
-        totalRejected: 0,
-        totalInProgress: 0,
-        totalCompleted: 0,
-        totalGreen: 0,
-        totalRed: 0,
-      },
-      services,
-      requests: {
-        totalItems: count,
-        totalPages: Math.ceil(count / limit),
-        currentPage: parseInt(page),
-        rows,
-      },
-    };
-  } catch (error) {
-    if (error instanceof AppError) throw error;
-    throw new AppError("Database error: Unable to fetch group dashboard data", 500);
-  }
-};
-const listCitizenRequests = async (phone, { page = 1, limit = 10, status }) => {
-  try {
-    const offset = (page - 1) * limit;
-    const whereClause = { user_phone: phone };
-
-    if (status) {
-      whereClause.status = status;
-    }
-
-    const { count, rows } = await ServiceRequest.findAndCountAll({
-      where: whereClause,
-      include: [
-        {
-          model: Service,
-          attributes: ["type", "place", "duration", "quality_standard", "delivery_mode", "paymentAmount"],
-        },
-      ],
-      limit: parseInt(limit),
-      offset: parseInt(offset),
-      order: [["createdAt", "DESC"]],
-    });
-
-    return {
-      totalItems: count,
-      totalPages: Math.ceil(count / limit),
-      currentPage: parseInt(page),
-      requests: rows,
-    };
-  } catch (error) {
-    throw new AppError("Database error: Unable to fetch citizen requests", 500);
-  }
-};
-
-/**
- * Fetch all Group Leaders within a specific unit
- */
-const getUnitGroupLeaders = async (unitId) => {
-  try {
-    const glRole = await Role.findOne({ where: { name: "GROUP_LEADER" } });
-    if (!glRole) throw new AppError("Group Leader role not found", 404);
-
-    const assignments = await UserAssignment.findAll({
-      where: { unit_id: unitId, role_id: glRole.id },
-      include: [
-        {
-          model: User,
-          attributes: ["user_id", "first_name", "last_name"],
-        },
-      ],
-    });
-
-    return assignments.map((a) => ({
-      id: a.User.user_id,
-      name: `${a.User.first_name} ${a.User.last_name}`,
-    }));
-  } catch (error) {
-    if (error instanceof AppError) throw error;
-    throw new AppError("Database error: Unable to fetch group leaders", 500);
+    throw new AppError("errors.fetch_roles_error", 500);
   }
 };
 
@@ -1391,22 +439,5 @@ module.exports = {
   getAllPermissionsService,
   getAllRolesService,
   getPersonnelByRoleService,
-  createService,
-  updateService,
-  listServices,
-  deleteServiceLogic,
-  listAssignedServices,
-  createServiceRequest,
-  listAssignedRequests,
-  getServicesByUnitService,
-  officerCompleteTask,
-  citizenCompleteTask,
-  rejectServiceRequest,
-  assignRequestToOfficer,
-  confirmServiceRequest,
   getUnitPersonnelDetailsService,
-  listCitizenRequests,
-  getHeadDashboardData,
-  getGroupDashboardData,
-  getUnitGroupLeaders,
-};
+}

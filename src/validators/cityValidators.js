@@ -3,8 +3,8 @@ const Joi = require("joi");
 // Define the group validation schema
 const citySchema = Joi.object({
   name: Joi.string().required().messages({
-    "string.empty": "City name is required",
-    "any.required": "City name is required",
+    "string.empty": "errors.city_name_required",
+    "any.required": "errors.city_name_required",
   }),
 });
 
@@ -14,7 +14,7 @@ const validateCityInput = (req, res, next) => {
 
   if (error) {
     // If validation fails, send an error response
-    return res.status(400).json({ error: error.details[0].message });
+    return res.status(400).json({ success: false, message: req.t(error.details[0].message) });
   }
 
   // If validation passes, proceed to the next middleware
@@ -26,25 +26,25 @@ const assignUserSchema = Joi.object({
     .uuid()
     .required()
     .messages({
-      "string.empty": "User ID is required",
-      "any.required": "User ID is required",
-      "string.guid": "User ID must be a valid UUID",
+      "string.empty": "errors.user_id_required",
+      "any.required": "errors.user_id_required",
+      "string.guid": "errors.invalid_uuid",
     }),
 
   cityId: Joi.string()
     .uuid()
     .required()
     .messages({
-      "string.empty": "City ID is required",
-      "any.required": "City ID is required",
-      "string.guid": "City ID must be a valid UUID",
+      "string.empty": "errors.city_id_required",
+      "any.required": "errors.city_id_required",
+      "string.guid": "errors.invalid_uuid",
     }),
 
   permissions: Joi.array()
     .items(Joi.string())
     .optional()
     .messages({
-      "array.base": "Permissions must be an array of strings",
+      "array.base": "errors.permissions_must_be_array",
     }),
 });
 
@@ -55,7 +55,7 @@ const validateAssignUserInput = (req, res, next) => {
   if (error) {
     return res.status(400).json({
       success: false,
-      message: error.details[0].message,
+      message: req.t(error.details[0].message),
     });
   }
 
@@ -66,21 +66,21 @@ const validateAssignUserInput = (req, res, next) => {
 
 const createEthiopiaUserSchema = Joi.object({
   user_id: Joi.string().uuid().required().messages({
-    "any.required": "User ID is required",
-    "string.guid": "User ID must be a valid UUID",
+    "any.required": "errors.user_id_required",
+    "string.guid": "errors.invalid_uuid",
   }),
 
   role: Joi.string()
     .required()
     .messages({
-      "any.required": "Role is required",
+      "any.required": "errors.role_required",
     }),
 
   permissions: Joi.array()
     .items(Joi.string())
     .optional()
     .messages({
-      "array.base": "Permissions must be an array of strings",
+      "array.base": "errors.permissions_must_be_array",
     }),
 
 
@@ -93,7 +93,7 @@ const validateCreateEthiopiaUserInput = (req, res, next) => {
   if (error) {
     return res.status(400).json({
       success: false,
-      message: error.details[0].message,
+      message: req.t(error.details[0].message),
     });
   }
 
@@ -102,9 +102,9 @@ const validateCreateEthiopiaUserInput = (req, res, next) => {
 
 const unassignUserSchema = Joi.object({
   userId: Joi.string().uuid().required().messages({
-    "string.empty": "User ID is required",
-    "string.guid": "User ID must be a valid UUID",
-    "any.required": "User ID is required",
+    "string.empty": "errors.user_id_required",
+    "string.guid": "errors.invalid_uuid",
+    "any.required": "errors.user_id_required",
   }),
 });
 
@@ -115,7 +115,7 @@ const validateUnassignUserInput = (req, res, next) => {
   if (error) {
     return res.status(400).json({
       success: false,
-      message: error.details[0].message,
+      message: req.t(error.details[0].message),
     });
   }
 
@@ -125,15 +125,15 @@ const validateUnassignUserInput = (req, res, next) => {
 // Schema for updating user permissions
 const updatePermissionsSchema = Joi.object({
   userId: Joi.string().uuid().required().messages({
-    "string.empty": "User ID is required",
-    "string.guid": "User ID must be a valid UUID",
-    "any.required": "User ID is required",
+    "string.empty": "errors.user_id_required",
+    "string.guid": "errors.invalid_uuid",
+    "any.required": "errors.user_id_required",
   }),
   permissions: Joi.array()
     .items(Joi.string())
     .required()
     .messages({
-      "array.base": "Permissions must be an array of permission names",
+      "array.base": "errors.permissions_must_be_array",
     }),
 });
 
@@ -144,312 +144,16 @@ const validateUpdatePermissionsInput = (req, res, next) => {
   if (error) {
     return res.status(400).json({
       success: false,
-      message: error.details[0].message,
+      message: req.t(error.details[0].message),
     });
   }
 
   next();
 };
 
-const createServiceSchema = Joi.object({
-  type: Joi.string().required().messages({
-    "string.empty": "Service type is required",
-    "any.required": "Service type is required",
-  }),
-  place: Joi.string().required().messages({
-    "string.empty": "Service place is required",
-    "any.required": "Service place is required",
-  }),
-  duration: Joi.number().integer().min(1).required().messages({
-    "number.base": "Duration must be a number",
-    "number.min": "Duration must be at least 1 hour",
-    "any.required": "Duration is required",
-  }),
-  quality_standard: Joi.number().optional(),
-  delivery_mode: Joi.string().required().messages({
-    "string.empty": "Delivery mode is required",
-    "any.required": "Delivery mode is required",
-  }),
-  preconditions: Joi.array().items(Joi.string()).optional(),
-  paymentAmount: Joi.string().optional().messages({
-    "string.base": "Payment amount must be a string",
-  }),
-  completion_metric: Joi.string()
-    .valid("OFFICER", "CITIZEN", "BOTH_AVERAGE")
-    .optional()
-    .messages({
-      "any.only": "Invalid completion metric. Must be OFFICER, CITIZEN, or BOTH_AVERAGE",
-    }),
-  groupLeaderIds: Joi.array().items(Joi.string().uuid()).optional().messages({
-    "array.base": "Group Leader IDs must be an array of UUIDs",
-  }),
-});
 
-const validateCreateServiceInput = (req, res, next) => {
-  const { error } = createServiceSchema.validate(req.body);
 
-  if (error) {
-    return res.status(400).json({
-      success: false,
-      message: error.details[0].message,
-    });
-  }
 
-  next();
-};
-
-const updateServiceSchema = Joi.object({
-  type: Joi.string().optional(),
-  place: Joi.string().optional(),
-  duration: Joi.number().integer().min(1).optional(),
-  quality_standard: Joi.number().optional(),
-  delivery_mode: Joi.string().optional(),
-  preconditions: Joi.array().items(Joi.string()).optional(),
-  paymentAmount: Joi.string().optional(),
-  completion_metric: Joi.string().valid("OFFICER", "CITIZEN", "BOTH_AVERAGE").optional(),
-  groupLeaderIds: Joi.array().items(Joi.string().uuid()).optional(),
-});
-
-const validateUpdateServiceInput = (req, res, next) => {
-  const { error } = updateServiceSchema.validate(req.body);
-
-  if (error) {
-    return res.status(400).json({
-      success: false,
-      message: error.details[0].message,
-    });
-  }
-
-  next();
-};
-
-const createServiceRequestSchema = Joi.object({
-  service_id: Joi.string().guid({ version: "uuidv4" }).required().messages({
-    "string.empty": "Service ID is required",
-    "string.guid": "Invalid Service ID format",
-  }),
-  user_phone: Joi.string()
-    .pattern(/^[0-9+]{10,15}$/)
-    .required()
-    .messages({
-      "string.empty": "Phone number is required",
-      "string.pattern.base": "Invalid phone number format",
-    }),
-  user_full_name: Joi.string().required().messages({
-    "string.empty": "Full name is required",
-    "any.required": "Full name is required",
-  }),
-});
-
-const validateCreateServiceRequestInput = (req, res, next) => {
-  const { error } = createServiceRequestSchema.validate(req.body);
-
-  if (error) {
-    return res.status(400).json({
-      success: false,
-      message: error.details[0].message,
-    });
-  }
-
-  next();
-};
-
-const rejectServiceRequestSchema = Joi.object({
-  rejection_reason: Joi.string().required().messages({
-    "string.empty": "Rejection reason is required",
-    "any.required": "Rejection reason is required",
-  }),
-});
-
-const validateRejectServiceRequestInput = (req, res, next) => {
-  const { error } = rejectServiceRequestSchema.validate(req.body);
-
-  if (error) {
-    return res.status(400).json({
-      success: false,
-      message: error.details[0].message,
-    });
-  }
-
-  next();
-};
-
-const assignRequestToOfficerSchema = Joi.object({
-  officer_id: Joi.string().uuid().required().messages({
-    "string.empty": "Officer ID is required",
-    "string.guid": "Invalid Officer ID format",
-    "any.required": "Officer ID is required",
-  }),
-});
-
-const validateAssignRequestToOfficerInput = (req, res, next) => {
-  const { error } = assignRequestToOfficerSchema.validate(req.body);
-
-  if (error) {
-    return res.status(400).json({
-      success: false,
-      message: error.details[0].message,
-    });
-  }
-
-  next();
-};
-
-const assignedRequestsQuerySchema = Joi.object({
-  page: Joi.number().integer().min(1).optional(),
-  limit: Joi.number().integer().min(1).optional(),
-  status: Joi.string()
-    .valid("PENDING", "CONFIRMED", "REJECTED", "IN_PROGRESS", "COMPLETED")
-    .optional()
-    .messages({
-      "any.only": "Invalid status. Must be PENDING, CONFIRMED, REJECTED, IN_PROGRESS, or COMPLETED",
-    }),
-});
-
-const validateAssignedRequestsQuery = (req, res, next) => {
-  const { error } = assignedRequestsQuerySchema.validate(req.query);
-
-  if (error) {
-    return res.status(400).json({
-      success: false,
-      message: error.details[0].message,
-    });
-  }
-
-  next();
-};
-
-const citizenRequestsQuerySchema = Joi.object({
-  phone: Joi.string()
-    .pattern(/^[0-9+]{10,15}$/)
-    .required()
-    .messages({
-      "string.empty": "Phone-number is required",
-      "string.pattern.base": "Invalid phone number format",
-      "any.required": "Phone number is required",
-    }),
-  page: Joi.number().integer().min(1).optional(),
-  limit: Joi.number().integer().min(1).optional(),
-  status: Joi.string()
-    .valid("PENDING", "CONFIRMED", "REJECTED", "IN_PROGRESS", "COMPLETED")
-    .optional()
-    .messages({
-      "any.only": "Invalid status. Must be PENDING, CONFIRMED, REJECTED, IN_PROGRESS, or COMPLETED",
-    }),
-});
-
-const validateCitizenRequestsQuery = (req, res, next) => {
-  const { error } = citizenRequestsQuerySchema.validate(req.query);
-
-  if (error) {
-    return res.status(400).json({
-      success: false,
-      message: error.details[0].message,
-    });
-  }
-
-  next();
-};
-
-const officerCompleteTaskSchema = Joi.object({
-  delay_reason: Joi.string().optional().allow(null, ""),
-});
-
-const validateOfficerCompleteTaskInput = (req, res, next) => {
-  const { error } = officerCompleteTaskSchema.validate(req.body);
-
-  if (error) {
-    return res.status(400).json({
-      success: false,
-      message: error.details[0].message,
-    });
-  }
-
-  next();
-};
-
-const citizenCompleteTaskSchema = Joi.object({
-  service_id: Joi.string().guid({ version: "uuidv4" }).required().messages({
-    "string.empty": "Service ID is required",
-    "string.guid": "Invalid Service ID format",
-  }),
-  user_phone: Joi.string()
-    .pattern(/^[0-9+]{10,15}$/)
-    .required()
-    .messages({
-      "string.empty": "Phone number is required",
-      "string.pattern.base": "Invalid phone number format",
-    }),
-});
-
-const validateCitizenCompleteTaskInput = (req, res, next) => {
-  const { error } = citizenCompleteTaskSchema.validate(req.body);
-
-  if (error) {
-    return res.status(400).json({
-      success: false,
-      message: error.details[0].message,
-    });
-  }
-
-  next();
-};
-
-const dashboardQuerySchema = Joi.object({
-  startDate: Joi.date().iso().required().messages({
-    "date.base": "Start date must be a valid date",
-    "any.required": "Start date is required",
-  }),
-  endDate: Joi.date().iso().required().messages({
-    "date.base": "End date must be a valid date",
-    "any.required": "End date is required",
-  }),
-  page: Joi.number().integer().min(1).default(1),
-  limit: Joi.number().integer().min(1).max(100).default(10),
-});
-
-const validateDashboardQuery = (req, res, next) => {
-  const { error } = dashboardQuerySchema.validate(req.query);
-
-  if (error) {
-    return res.status(400).json({
-      success: false,
-      message: error.details[0].message,
-    });
-  }
-
-  next();
-};
-
-const groupDashboardQuerySchema = Joi.object({
-  startDate: Joi.date().iso().required().messages({
-    "date.base": "Start date must be a valid date",
-    "any.required": "Start date is required",
-  }),
-  endDate: Joi.date().iso().required().messages({
-    "date.base": "End date must be a valid date",
-    "any.required": "End date is required",
-  }),
-  groupLeaderId: Joi.string().guid({ version: "uuidv4" }).required().messages({
-    "string.guid": "Valid Group Leader ID is required",
-    "any.required": "Group Leader ID is required",
-  }),
-  page: Joi.number().integer().min(1).default(1),
-  limit: Joi.number().integer().min(1).max(100).default(10),
-});
-
-const validateGroupDashboardQuery = (req, res, next) => {
-  const { error } = groupDashboardQuerySchema.validate(req.query);
-
-  if (error) {
-    return res.status(400).json({
-      success: false,
-      message: error.details[0].message,
-    });
-  }
-
-  next();
-};
 
 module.exports = {
   validateCityInput,
@@ -457,15 +161,4 @@ module.exports = {
   validateCreateEthiopiaUserInput,
   validateUnassignUserInput,
   validateUpdatePermissionsInput,
-  validateCreateServiceInput,
-  validateUpdateServiceInput,
-  validateCreateServiceRequestInput,
-  validateRejectServiceRequestInput,
-  validateAssignRequestToOfficerInput,
-  validateAssignedRequestsQuery,
-  validateCitizenRequestsQuery,
-  validateOfficerCompleteTaskInput,
-  validateDashboardQuery,
-  validateGroupDashboardQuery,
-  validateCitizenCompleteTaskInput
 };

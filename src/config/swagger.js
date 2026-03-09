@@ -5,14 +5,14 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerDefinition = {
   openapi: "3.0.0",
   info: {
-    title: "Genbata ena Kutter Management System",
+    title: "Ethiopian Health Management System",
     version: "1.0.0",
-    description: "API documentation for Genbata ena Kutter Management System",
+    description: "API documentation for Ethiopian Health Management System",
   },
   servers: [
     {
-      // url: "http://localhost:5000/api",
-      url: "https://servicebackend.ilul-tech.com/api",
+      url: "http://localhost:5000/api",
+      // url: "https://servicebackend.ilul-tech.com/api",
       description: "Development server",
     },
   ],

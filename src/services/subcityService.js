@@ -15,7 +15,7 @@ const createSubcityService = async (name, user) => {
   try {
     // Ensure the user is assigned to a CITY
     if (user.unit.level !== "CITY") {
-      throw new AppError("Only City Admins can create Subcities", 403);
+      throw new AppError("errors.only_city_admin_can_create_subcities", 403);
     }
 
     // Check if subcity already exists under this city
@@ -28,7 +28,7 @@ const createSubcityService = async (name, user) => {
     });
 
     if (existingSubcity) {
-      throw new AppError("Subcity with this name already exists in your city", 400);
+      throw new AppError("errors.subcity_exists", 400);
     }
 
     // Create the subcity
@@ -41,7 +41,7 @@ const createSubcityService = async (name, user) => {
     return newSubcity;
   } catch (error) {
     if (error instanceof AppError) throw error;
-    throw new AppError("Database error: Unable to create subcity", 500);
+    throw new AppError("errors.create_subcity_error", 500);
   }
 };
 
@@ -84,7 +84,7 @@ const listSubcitiesService = async (user) => {
     return subcities;
   } catch (error) {
     if (error instanceof AppError) throw error;
-    throw new AppError("Database error: Unable to fetch subcities", 500);
+    throw new AppError("errors.fetch_subcities_error", 500);
   }
 };
 
@@ -102,7 +102,7 @@ const updateSubcityService = async (subcityId, name, user) => {
       where: whereClause,
     });
 
-    if (!subcity) throw new AppError("Subcity not found or unauthorized", 404);
+    if (!subcity) throw new AppError("errors.subcity_not_found", 404);
 
     // Check for duplicate name in the same city
     const duplicate = await AdministrativeUnit.findOne({
@@ -114,7 +114,7 @@ const updateSubcityService = async (subcityId, name, user) => {
       },
     });
 
-    if (duplicate) throw new AppError("Another subcity with this name exists", 400);
+    if (duplicate) throw new AppError("errors.subcity_exists", 400);
 
     subcity.name = name;
     await subcity.save();
@@ -122,7 +122,7 @@ const updateSubcityService = async (subcityId, name, user) => {
     return subcity;
   } catch (error) {
     if (error instanceof AppError) throw error;
-    throw new AppError("Database error: Unable to update subcity", 500);
+    throw new AppError("errors.update_subcity_error", 500);
   }
 };
 
@@ -139,7 +139,7 @@ const deleteSubcityService = async (subcityId, user) => {
       where: whereClause,
     });
 
-    if (!subcity) throw new AppError("Subcity not found or unauthorized", 404);
+    if (!subcity) throw new AppError("errors.subcity_not_found", 404);
 
     // Check for child units (e.g. Woredas)
     const childCount = await AdministrativeUnit.count({
@@ -148,7 +148,7 @@ const deleteSubcityService = async (subcityId, user) => {
 
     if (childCount > 0) {
       throw new AppError(
-        "Cannot delete subcity with existing Woredas. Delete Woredas first.",
+        "errors.subcity_has_woredas",
         400
       );
     }
@@ -158,7 +158,7 @@ const deleteSubcityService = async (subcityId, user) => {
     return true;
   } catch (error) {
     if (error instanceof AppError) throw error;
-    throw new AppError("Database error: Unable to delete subcity", 500);
+    throw new AppError("errors.delete_subcity_error", 500);
   }
 };
 
@@ -172,20 +172,20 @@ const assignSubcityAdminService = async ({
   // 1. Validate Subcity
   const subcity = await AdministrativeUnit.findByPk(subcityId);
   if (!subcity || subcity.level !== "SUBCITY") {
-    throw new AppError("Invalid SUBCITY ID", 400);
+    throw new AppError("errors.invalid_subcity_id", 400);
   }
 
   // 2. Ensure current user is the parent City Admin (or Ethiopia Admin)
   if (currentUser.unit.level === "CITY") {
     if (subcity.parent_id !== currentUser.unit.id) {
-      throw new AppError("You can only assign admins to subcities within your city", 403);
+      throw new AppError("errors.assign_subcity_admin_unauthorized", 403);
     }
   }
 
   // 3. Fetch/Create SUBCITY_ADMIN role
   const [adminRole] = await Role.findOrCreate({
     where: { name: "ADMIN" },
-    defaults: { description: "Subcity Admin role" },
+    defaults: { description: "fields.role_description_subcity_admin" },
   });
 
   // 4. Assign user
@@ -218,13 +218,13 @@ const createCityLevelUserService = async ({
 }) => {
   // Ensure actor is a SUBCITY Admin
   if (actor.unit.level !== "CITY") {
-    throw new AppError("Only CITY Admins can create city level users", 403);
+    throw new AppError("errors.only_city_admin_can_create_users", 403);
   }
 
   // Find or Create Role
   const [role] = await Role.findOrCreate({
     where: { name: roleName },
-    defaults: { description: "Subcity level role" },
+    defaults: { description: "fields.role_description_subcity_user" },
   });
 
   // Assign user to the actor's subcity
@@ -247,7 +247,7 @@ const updateCityLevelUserService = async ({
 }) => {
   // Ensure actor is a SUBCITY Admin
   if (actor.unit.level !== "CITY") {
-    throw new AppError("Only CITY Admins can update city level users", 403);
+    throw new AppError("errors.only_city_admin_can_create_users", 403);
   }
 
   const transaction = await sequelize.transaction();
@@ -260,14 +260,14 @@ const updateCityLevelUserService = async ({
     });
 
     if (!assignment) {
-      throw new AppError("User is not assigned to your subcity", 404);
+      throw new AppError("errors.user_not_assigned_subcity", 404);
     }
 
     // 2. Update Role if provided and different
     if (roleName) {
       const [role] = await Role.findOrCreate({
         where: { name: roleName },
-        defaults: { description: "City level role" },
+        defaults: { description: "fields.role_description_subcity_user" },
         transaction
       });
       if (assignment.role_id !== role.id) {
@@ -305,7 +305,7 @@ const updateCityLevelUserService = async ({
     return {
       userId,
       role: roleName,
-      permissions,
+      overrides: permissions, // Clarify as overrides
       message: "User updated successfully"
     };
 

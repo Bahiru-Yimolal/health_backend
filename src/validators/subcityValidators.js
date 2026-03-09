@@ -3,8 +3,8 @@ const Joi = require("joi");
 // Define the subcity validation schema
 const subcitySchema = Joi.object({
     name: Joi.string().required().messages({
-        "string.empty": "Subcity name is required",
-        "any.required": "Subcity name is required",
+        "string.empty": "errors.subcity_name_required",
+        "any.required": "errors.subcity_name_required",
     }),
 });
 
@@ -14,25 +14,25 @@ const assignSubcityAdminSchema = Joi.object({
         .uuid()
         .required()
         .messages({
-            "string.empty": "User ID is required",
-            "any.required": "User ID is required",
-            "string.guid": "User ID must be a valid UUID",
+            "string.empty": "errors.user_id_required",
+            "any.required": "errors.user_id_required",
+            "string.guid": "errors.invalid_uuid",
         }),
 
     subcityId: Joi.string()
         .uuid()
         .required()
         .messages({
-            "string.empty": "Subcity ID is required",
-            "any.required": "Subcity ID is required",
-            "string.guid": "Subcity ID must be a valid UUID",
+            "string.empty": "errors.subcity_id_required",
+            "any.required": "errors.subcity_id_required",
+            "string.guid": "errors.invalid_uuid",
         }),
 
     permissions: Joi.array()
         .items(Joi.string())
         .optional()
         .messages({
-            "array.base": "Permissions must be an array of strings",
+            "array.base": "errors.permissions_must_be_array",
         }),
 });
 
@@ -42,7 +42,7 @@ const validateSubcityInput = (req, res, next) => {
 
     if (error) {
         // If validation fails, send an error response
-        return res.status(400).json({ error: error.details[0].message });
+        return res.status(400).json({ success: false, message: req.t(error.details[0].message) });
     }
 
     // If validation passes, proceed to the next middleware
@@ -56,7 +56,7 @@ const validateAssignSubcityAdminInput = (req, res, next) => {
     if (error) {
         return res.status(400).json({
             success: false,
-            message: error.details[0].message,
+            message: req.t(error.details[0].message),
         });
     }
 
@@ -66,21 +66,21 @@ const validateAssignSubcityAdminInput = (req, res, next) => {
 // Define create subcity user schema
 const createSubcityUserSchema = Joi.object({
     user_id: Joi.string().uuid().required().messages({
-        "any.required": "User ID is required",
-        "string.guid": "User ID must be a valid UUID",
+        "any.required": "errors.user_id_required",
+        "string.guid": "errors.invalid_uuid",
     }),
 
     role: Joi.string()
         .required()
         .messages({
-            "any.required": "Role is required",
+            "any.required": "errors.role_required",
         }),
 
     permissions: Joi.array()
         .items(Joi.string())
         .optional()
         .messages({
-            "array.base": "Permissions must be an array of strings",
+            "array.base": "errors.permissions_must_be_array",
         }),
 });
 
@@ -91,7 +91,7 @@ const validateCreateCityUserInput = (req, res, next) => {
     if (error) {
         return res.status(400).json({
             success: false,
-            message: error.details[0].message,
+            message: req.t(error.details[0].message),
         });
     }
 

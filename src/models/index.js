@@ -3,11 +3,13 @@ const AdministrativeUnit = require("./administrativeUnitModel");
 const Role = require("./roleModel");
 const Permission = require("./permissionModel");
 const UserAssignment = require("./userAssignment");
-const UserPermission = require("./userPermissionModel");
+const UserPermission = require("./userPermissionModel"); // Repurposed for Overrides
+const RolePermission = require("./rolePermissionModel"); // New Role-based permissions
 const AuditLog = require("./auditLogModel");
-const Service = require("./serviceModel");
-const ServiceAssignment = require("./serviceAssignmentModel");
-const ServiceRequest = require("./serviceRequestModel");
+const Family = require("./familyModel");
+const PregnantMother = require("./pregnantMotherModel");
+const LactatingMother = require("./lactatingMotherModel");
+const Child = require("./childModel");
 
 // User -> UserAssignment
 User.hasMany(UserAssignment, { foreignKey: "user_id" });
@@ -21,11 +23,28 @@ UserAssignment.belongsTo(AdministrativeUnit, { foreignKey: "unit_id" });
 Role.hasMany(UserAssignment, { foreignKey: "role_id" });
 UserAssignment.belongsTo(Role, { foreignKey: "role_id" });
 
-// UserAssignment -> UserPermission
+// --- HYBRID RBAC ASSOCIATIONS ---
+
+// 1. Role-based Permissions (The Standard)
+Role.belongsToMany(Permission, {
+  through: RolePermission,
+  foreignKey: "role_id",
+});
+Permission.belongsToMany(Role, {
+  through: RolePermission,
+  foreignKey: "permission_id",
+});
+
+Role.hasMany(RolePermission, { foreignKey: "role_id" });
+RolePermission.belongsTo(Role, { foreignKey: "role_id" });
+
+Permission.hasMany(RolePermission, { foreignKey: "permission_id" });
+RolePermission.belongsTo(Permission, { foreignKey: "permission_id" });
+
+// 2. User-specific Overrides (The Exception)
 UserAssignment.hasMany(UserPermission, { foreignKey: "assignment_id" });
 UserPermission.belongsTo(UserAssignment, { foreignKey: "assignment_id" });
 
-// Permission -> UserPermission
 Permission.hasMany(UserPermission, { foreignKey: "permission_id" });
 UserPermission.belongsTo(Permission, { foreignKey: "permission_id" });
 
@@ -33,25 +52,27 @@ UserPermission.belongsTo(Permission, { foreignKey: "permission_id" });
 AuditLog.belongsTo(User, { foreignKey: "user_id" });
 AuditLog.belongsTo(AdministrativeUnit, { foreignKey: "unit_id" });
 
-// Service associations
-Service.belongsTo(AdministrativeUnit, { foreignKey: "unit_id" });
-AdministrativeUnit.hasMany(Service, { foreignKey: "unit_id" });
-Service.belongsTo(User, { foreignKey: "created_by" });
-User.hasMany(Service, { foreignKey: "created_by" });
+// --- FAMILY & DEPENDENT ASSOCIATIONS ---
 
-// ServiceAssignment associations
-Service.hasMany(ServiceAssignment, { foreignKey: "service_id" });
-ServiceAssignment.belongsTo(Service, { foreignKey: "service_id" });
-ServiceAssignment.belongsTo(User, { foreignKey: "group_leader_id" });
-User.hasMany(ServiceAssignment, { foreignKey: "group_leader_id" });
+// Family -> AdministrativeUnit (Block)
+AdministrativeUnit.hasMany(Family, { foreignKey: "block_id", as: "Families" });
+Family.belongsTo(AdministrativeUnit, { foreignKey: "block_id", as: "Block" });
 
-// ServiceRequest associations
-Service.hasMany(ServiceRequest, { foreignKey: "service_id" });
-ServiceRequest.belongsTo(Service, { foreignKey: "service_id" });
-ServiceRequest.belongsTo(User, { as: "GroupLeader", foreignKey: "group_leader_id" });
-ServiceRequest.belongsTo(User, { as: "Officer", foreignKey: "officer_id" });
-User.hasMany(ServiceRequest, { as: "GroupLeaderRequests", foreignKey: "group_leader_id" });
-User.hasMany(ServiceRequest, { as: "OfficerRequests", foreignKey: "officer_id" });
+// Family -> User (Created By)
+User.hasMany(Family, { foreignKey: "created_by" });
+Family.belongsTo(User, { foreignKey: "created_by", as: "Creator" });
+
+// Family -> PregnantMother (1-to-1)
+Family.hasOne(PregnantMother, { foreignKey: "family_id", onDelete: "CASCADE" });
+PregnantMother.belongsTo(Family, { foreignKey: "family_id" });
+
+// Family -> LactatingMother (1-to-1)
+Family.hasOne(LactatingMother, { foreignKey: "family_id", onDelete: "CASCADE" });
+LactatingMother.belongsTo(Family, { foreignKey: "family_id" });
+
+// Family -> Child (1-to-Many)
+Family.hasMany(Child, { foreignKey: "family_id", onDelete: "CASCADE" });
+Child.belongsTo(Family, { foreignKey: "family_id" });
 
 module.exports = {
   User,
@@ -60,10 +81,12 @@ module.exports = {
   Permission,
   UserAssignment,
   UserPermission,
+  RolePermission,
   AuditLog,
-  Service,
-  ServiceAssignment,
-  ServiceRequest,
+  Family,
+  PregnantMother,
+  LactatingMother,
+  Child,
 };
 
 

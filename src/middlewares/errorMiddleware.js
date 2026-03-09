@@ -9,9 +9,14 @@ class AppError extends Error {
 
 const errorMiddleware = (err, req, res, next) => {
   const statusCode = err.statusCode || 500;
-  const message = err.message || "Internal Server Error";
+  let message = err.message || "Internal Server Error";
 
-  // Log the error stack for debugging (you can decide whether to log it in production)
+  // If the message is a translation key (starts with errors.), translate it
+  if (req.t && typeof message === "string" && message.startsWith("errors.")) {
+    message = req.t(message);
+  }
+
+  // Log the error stack for debugging
   if (process.env.NODE_ENV === "development") {
     console.error(err.stack);
   }

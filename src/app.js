@@ -1,17 +1,21 @@
 const express = require("express");
 const userRoutes = require("./routes/userRoutes");
 const subcityRoutes = require("./routes/subcityRoutes");
-const sectorRoutes = require("./routes/sectorRoutes");
+const healthCenterRoutes = require("./routes/healthCenterRoutes");
 const cityRoutes = require("./routes/cityRoutes");
+const communityUnitRoutes = require("./routes/communityUnitRoutes");
+const familyRoutes = require("./routes/familyRoutes");
 const { errorMiddleware } = require("./middlewares/errorMiddleware");
 const cors = require("cors");
 const { swaggerUi, swaggerSpec } = require("./config/swagger");
 const path = require("path");
 
+const i18nMiddleware = require("./middlewares/i18nMiddleware");
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(i18nMiddleware);
 app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static("uploads"));
 
@@ -22,7 +26,9 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api/users", userRoutes);
 app.use("/api/cities", cityRoutes);
 app.use("/api/subcities", subcityRoutes);
-app.use("/api/sectors", sectorRoutes);
+app.use("/api/health-centers", healthCenterRoutes);
+app.use("/api/community-units", communityUnitRoutes);
+app.use("/api/families", familyRoutes);
 
 app.use(errorMiddleware);
 

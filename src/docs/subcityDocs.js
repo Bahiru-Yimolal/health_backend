@@ -4,6 +4,8 @@
  *   post:
  *     summary: Create a new Subcity (City Admin only)
  *     tags: [City Admin]
+ *     parameters:
+ *       - $ref: '#/components/parameters/acceptLanguageHeader'
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -33,7 +35,7 @@
  *                 message:
  *                   type: string
  *                   example: "Subcity created successfully"
- *                 subcity:
+ *                 data:
  *                   type: object
  *                   properties:
  *                     id:
@@ -74,6 +76,8 @@
  *   get:
  *     summary: List all subcities for the current City (City Admin only)
  *     tags: [City Admin]
+ *     parameters:
+ *       - $ref: '#/components/parameters/acceptLanguageHeader'
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -140,6 +144,7 @@
  *     security:
  *       - bearerAuth: []
  *     parameters:
+ *       - $ref: '#/components/parameters/acceptLanguageHeader'
  *       - name: id
  *         in: path
  *         description: ID of the subcity to update
@@ -174,7 +179,7 @@
  *                 message:
  *                   type: string
  *                   example: "Subcity updated successfully"
- *                 subcity:
+ *                 data:
  *                   type: object
  *                   properties:
  *                     id:
@@ -207,6 +212,7 @@
  *     security:
  *       - bearerAuth: []
  *     parameters:
+ *       - $ref: '#/components/parameters/acceptLanguageHeader'
  *       - name: id
  *         in: path
  *         description: ID of the subcity to delete
@@ -246,6 +252,8 @@
  *   post:
  *     summary: Assign a Subcity Admin to a Subcity (City Admin only)
  *     tags: [City Admin]
+ *     parameters:
+ *       - $ref: '#/components/parameters/acceptLanguageHeader'
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -290,7 +298,7 @@
  *                 message:
  *                   type: string
  *                   example: "Subcity Admin assigned successfully"
- *                 assignment:
+ *                 data:
  *                   type: object
  *                   properties:
  *                     id:
@@ -323,6 +331,8 @@
  *   post:
  *     summary: Create/Assign a User to the Subcity (City Admin only)
  *     tags: [City Admin]
+ *     parameters:
+ *       - $ref: '#/components/parameters/acceptLanguageHeader'
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -357,6 +367,8 @@
  *   put:
  *     summary: Update a Subcity User's Role/Permissions (City Admin only)
  *     tags: [City Admin]
+ *     parameters:
+ *       - $ref: '#/components/parameters/acceptLanguageHeader'
  *     security:
  *       - bearerAuth: []
  *     requestBody:

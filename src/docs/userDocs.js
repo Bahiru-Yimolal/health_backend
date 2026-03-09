@@ -7,6 +7,15 @@
  *       scheme: bearer
  *       bearerFormat: JWT
  *       description: Please enter JWT token in the format **Bearer &lt;token&gt;** to access this endpoint.
+ *   parameters:
+ *     acceptLanguageHeader:
+ *       in: header
+ *       name: Accept-Language
+ *       schema:
+ *         type: string
+ *         enum: [eng, am, orm, som, tir, sid]
+ *         default: eng
+ *       description: Language preference for the response (e.g., eng, am, orm, som, tir, sid)
  */
 
 /**
@@ -15,6 +24,8 @@
  *   post:
  *     summary: Register a new user
  *     tags: [User]
+ *     parameters:
+ *       - $ref: '#/components/parameters/acceptLanguageHeader'
  *     requestBody:
  *       required: true
  *       content:
@@ -28,6 +39,9 @@
  *               last_name:
  *                 type: string
  *                 example: Doe
+ *               username:
+ *                 type: string
+ *                 example: johndoe
  *               email:
  *                 type: string
  *                 example: user@example.com
@@ -37,6 +51,10 @@
  *               password:
  *                 type: string
  *                 example: "Password123!"
+ *               language_preference:
+ *                 type: string
+ *                 enum: [eng, am, orm, som, tir, sid]
+ *                 example: eng
  *     responses:
  *       201:
  *         description: User registered successfully
@@ -46,8 +64,9 @@
  *               type: object
  *               properties:
  *                 user_id:
- *                   type: integer
- *                   example: 1
+ *                   type: string
+ *                   format: uuid
+ *                   example: "550e8400-e29b-41d4-a716-446655440000"
  *                 message:
  *                   type: string
  *                   example: User registered successfully.
@@ -62,6 +81,8 @@
  *     tags: [User]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - $ref: '#/components/parameters/acceptLanguageHeader'
  *     responses:
  *       200:
  *         description: A list of users
@@ -73,8 +94,9 @@
  *                 type: object
  *                 properties:
  *                   user_id:
- *                     type: integer
- *                     example: 1
+ *                     type: string
+ *                     format: uuid
+ *                     example: "550e8400-e29b-41d4-a716-446655440000"
  *                   first_name:
  *                     type: string
  *                     example: John
@@ -103,6 +125,8 @@
  *     tags: [User]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - $ref: '#/components/parameters/acceptLanguageHeader'
  *     requestBody:
  *       required: true
  *       content:
@@ -122,6 +146,13 @@
  *               phoneNumber:
  *                 type: string
  *                 example: "0912345678"
+ *               username:
+ *                 type: string
+ *                 example: janedoe
+ *               language_preference:
+ *                 type: string
+ *                 enum: [eng, am, orm, som, tir, sid]
+ *                 example: eng
  *     responses:
  *       200:
  *         description: User updated successfully
@@ -131,8 +162,9 @@
  *               type: object
  *               properties:
  *                 user_id:
- *                   type: integer
- *                   example: 1
+ *                   type: string
+ *                   format: uuid
+ *                   example: "550e8400-e29b-41d4-a716-446655440000"
  *                 message:
  *                   type: string
  *                   example: User updated successfully
@@ -152,6 +184,8 @@
  *     tags: [User]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - $ref: '#/components/parameters/acceptLanguageHeader'
  *     requestBody:
  *       required: true
  *       content:
@@ -186,6 +220,8 @@
  *   post:
  *     summary: User Login
  *     tags: [User]
+ *     parameters:
+ *       - $ref: '#/components/parameters/acceptLanguageHeader'
  *     requestBody:
  *       required: true
  *       content:
@@ -217,8 +253,9 @@
  *                   type: object
  *                   properties:
  *                     user_id:
- *                       type: integer
- *                       example: 1
+ *                       type: string
+ *                       format: uuid
+ *                       example: "550e8400-e29b-41d4-a716-446655440000"
  *                     first_name:
  *                       type: string
  *                       example: "John"
@@ -228,6 +265,13 @@
  *                     phone_number:
  *                       type: string
  *                       example: "0912345678"
+ *                     username:
+ *                       type: string
+ *                       example: "johndoe"
+ *                     language_preference:
+ *                       type: string
+ *                       enum: [eng, am, orm, som, tir, sid]
+ *                       example: "eng"
  *                     role:
  *                       type: string
  *                       example: "Group Leader"
@@ -308,6 +352,8 @@
  *     tags: [Authentication]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - $ref: '#/components/parameters/acceptLanguageHeader'
  *     requestBody:
  *       required: true
  *       content:
@@ -369,6 +415,8 @@
  *     tags: [User]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - $ref: '#/components/parameters/acceptLanguageHeader'
  *     requestBody:
  *       required: true
  *       content:
@@ -445,6 +493,7 @@
  *     security:
  *       - bearerAuth: []
  *     parameters:
+ *       - $ref: '#/components/parameters/acceptLanguageHeader'
  *       - in: path
  *         name: phoneNumber
  *         required: true
@@ -479,12 +528,58 @@
  */
 /**
  * @swagger
+ * /users/resetPasswordById/{userId}:
+ *   patch:
+ *     summary: Reset user password by ID
+ *     description: Resets the user's password to "Password123" by their user ID. Only accessible by authorized administrators.
+ *     tags:
+ *       - User
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - $ref: '#/components/parameters/acceptLanguageHeader'
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The ID of the user whose password is to be reset.
+ *     responses:
+ *       200:
+ *         description: Password reset successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Password reset successfully to Password123
+ *                 data:
+ *                   type: object
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+/**
+ * @swagger
  * /users/pendingStatus:
  *   get:
  *     summary: Get all users with pending status
  *     tags: [User]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - $ref: '#/components/parameters/acceptLanguageHeader'
  *     responses:
  *       200:
  *         description: A list of users with pending status
@@ -496,8 +591,9 @@
  *                 type: object
  *                 properties:
  *                   user_id:
- *                     type: integer
- *                     example: 1
+ *                     type: string
+ *                     format: uuid
+ *                     example: "550e8400-e29b-41d4-a716-446655440000"
  *                   first_name:
  *                     type: string
  *                     example: John
@@ -512,6 +608,113 @@
  *                     example: assigned
  *       401:
  *         description: Unauthorized, invalid token
+ *       500:
+ *         description: Internal server error
+ */
+
+/**
+ * @swagger
+ * /users/language:
+ *   patch:
+ *     summary: Update user language preference
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - $ref: '#/components/parameters/acceptLanguageHeader'
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               language_preference:
+ *                 type: string
+ *                 enum: [eng, am, orm, som, tir, sid]
+ *                 example: eng
+ *     responses:
+ *       200:
+ *         description: Language preference updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                 language_preference:
+ *                   type: string
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
+/**
+ * @swagger
+ * /users/{userId}:
+ *   get:
+ *     summary: Get user details by ID
+ *     description: Retrieve detailed information about a user by their unique user ID. Only accessible by authorized users.
+ *     tags:
+ *       - User
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - $ref: '#/components/parameters/acceptLanguageHeader'
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The unique ID of the user.
+ *     responses:
+ *       200:
+ *         description: User details retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: User details retrieved successfully
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     user_id:
+ *                       type: string
+ *                       format: uuid
+ *                       example: "550e8400-e29b-41d4-a716-446655440000"
+ *                     first_name:
+ *                       type: string
+ *                       example: John
+ *                     last_name:
+ *                       type: string
+ *                       example: Doe
+ *                     username:
+ *                       type: string
+ *                       example: johndoe
+ *                     email:
+ *                       type: string
+ *                       example: john.doe@example.com
+ *                     phone_number:
+ *                       type: string
+ *                       example: "+251911234567"
+ *                     language_preference:
+ *                       type: string
+ *                       example: "eng"
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: User not found
  *       500:
  *         description: Internal server error
  */

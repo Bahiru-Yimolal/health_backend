@@ -7,8 +7,10 @@ const {
   resetEmailPasswordService,
   resetPasswordService,
   resetUserPasswordService,
-  getAllUsersWithPendingService
-
+  getAllUsersWithPendingService,
+  resetUserPasswordByIdService,
+  updateLanguagePreferenceService,
+  getUserByIdService
 } = require("../services/userService");
 
 const authUserController = async (req, res, next) => {
@@ -33,6 +35,12 @@ const authUserController = async (req, res, next) => {
     // --------------------------------
 
     const result = await loginService(phone_number, password);
+
+    // If there's a message key, translate it
+    if (req.t && result.message && result.message.startsWith("errors.")) {
+      result.message = req.t(result.message);
+    }
+
     res.json({ success: true, ...result });
   } catch (error) {
     next(error);
@@ -41,19 +49,21 @@ const authUserController = async (req, res, next) => {
 
 const userRegistrationController = async (req, res, next) => {
   try {
-    const { first_name, last_name, email, phone_number, password } = req.body;
+    const { first_name, last_name, username, email, phone_number, password, language_preference } = req.body;
 
     const newUser = await registerUserService(
       first_name,
       last_name,
+      username,
       email,
       phone_number,
-      password
+      password,
+      language_preference
     );
 
     res.status(201).json({
       success: true,
-      message: "User created successfully",
+      message: req.t("success.user_registered"),
       user: newUser,
     });
   } catch (error) {
@@ -82,7 +92,7 @@ const getAllUsersController = async (req, res, next) => {
 
 const updateUserController = async (req, res, next) => {
   try {
-    const { firstName, lastName,email, phoneNumber } = req.body;
+    const { firstName, lastName, email, phoneNumber, username, language_preference } = req.body;
     const userId = req.user.payload.user_id; // Get user ID from the token
 
     const updatedUser = await updateUserService(
@@ -90,10 +100,14 @@ const updateUserController = async (req, res, next) => {
       firstName,
       lastName,
       email,
-      phoneNumber
+      phoneNumber,
+      username,
+      language_preference
     );
 
-    return res.status(200).json({ success: true, data: updatedUser });
+    const message = req.t ? req.t("success.profile_updated") : "Profile updated successfully";
+
+    return res.status(200).json({ success: true, message, data: updatedUser });
   } catch (error) {
     next(error);
   }
@@ -101,10 +115,8 @@ const updateUserController = async (req, res, next) => {
 
 
 const updateUserPasswordController = async (req, res, next) => {
-  // const userId = req.user.id; // Assuming `req.user` has the authenticated user info
   const { currentPassword, newPassword } = req.body;
   const userId = req.user.payload.user_id;
-
 
   try {
     const result = await updatePasswordService(
@@ -112,7 +124,13 @@ const updateUserPasswordController = async (req, res, next) => {
       currentPassword,
       newPassword
     );
-    res.status(200).json({ success: true, data: result });
+
+    // If there's a message key, translate it
+    if (req.t && result.message && result.message.startsWith("success.")) {
+      result.message = req.t(result.message);
+    }
+
+    res.status(200).json({ success: true, ...result });
   } catch (error) {
     next(error);
   }
@@ -173,10 +191,69 @@ const resetUserPasswordController = async (req, res, next) => {
 
     const result = await resetUserPasswordService(phoneNumber);
 
+    const message = req.t
+      ? req.t("success.password_reset_admin")
+      : "Password reset successfully to Password123";
+
     res.status(200).json({
       success: true,
-      message: `Password reset successfully to Password@123`,
+      message,
       data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const resetUserPasswordByIdController = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+
+    const result = await resetUserPasswordByIdService(userId);
+
+    const message = req.t
+      ? req.t("success.password_reset_admin")
+      : "Password reset successfully to Password123";
+
+    res.status(200).json({
+      success: true,
+      message,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateLanguagePreferenceController = async (req, res, next) => {
+  try {
+    const { language_preference } = req.body;
+    const userId = req.user.payload.user_id;
+
+    const updatedUser = await updateLanguagePreferenceService(
+      userId,
+      language_preference
+    );
+
+    res.status(200).json({
+      success: true,
+      message: req.t("success.language_preference_updated"),
+      language_preference: updatedUser.language_preference,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getUserByIdController = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const user = await getUserByIdService(userId);
+
+    res.status(200).json({
+      success: true,
+      message: req.t("success.user_retrieved"),
+      user
     });
   } catch (error) {
     next(error);
@@ -211,5 +288,8 @@ module.exports = {
   resetEmailPasswordController,
   resetPasswordController,
   resetUserPasswordController,
+  resetUserPasswordByIdController,
+  updateLanguagePreferenceController,
+  getUserByIdController,
   getAllUsersWithPendingStatusController
 };

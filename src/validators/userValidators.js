@@ -28,6 +28,13 @@ const userSchema = Joi.object({
       "string.length": "Phone number must be exactly 10 digits long.",
       "string.pattern.base": "Phone number must contain only numbers.",
     }),
+  username: Joi.string().min(3).max(30).optional().messages({
+    "string.min": "Username must be at least 3 characters long.",
+    "string.max": "Username must be less than or equal to 30 characters.",
+  }),
+  language_preference: Joi.string().valid("eng", "am", "orm", "som", "tir", "sid").optional().messages({
+    "any.only": "Language preference must be one of: eng, am, orm, som, tir, sid.",
+  }),
   password: Joi.string()
     .min(6) // 
     .required()
@@ -41,12 +48,30 @@ const userSchema = Joi.object({
 const validateUser = (req, res, next) => {
   const { error } = userSchema.validate(req.body);
   if (error) {
-    // Map the technical Joi error message to a user-friendly one
-    return res
-      .status(400)
-      .json({ success: false, message: error.details[0].message });
+    const detail = error.details[0];
+    const fieldKey = detail.context.label || detail.path[0];
+    let message = detail.message;
+
+    if (req.t) {
+      // Translate the field label
+      const field = req.t(`fields.${fieldKey}`);
+
+      if (detail.type === "any.required" || detail.type === "string.empty") {
+        message = req.t("errors.field_required").replace("{{field}}", field);
+      } else if (detail.type === "string.min") {
+        message = req.t("errors.min_length")
+          .replace("{{field}}", field)
+          .replace("{{min}}", detail.context.limit);
+      } else if (detail.type === "string.max") {
+        message = req.t("errors.max_length")
+          .replace("{{field}}", field)
+          .replace("{{max}}", detail.context.limit);
+      }
+    }
+
+    return res.status(400).json({ success: false, message });
   }
-  next(); // Proceed if validation succeeds
+  next();
 };
 const updateUserSchema = Joi.object({
   firstName: Joi.string().min(1).max(30).required().messages({
@@ -71,14 +96,45 @@ const updateUserSchema = Joi.object({
       "string.length": "Phone number must be exactly 10 digits long.",
       "string.pattern.base": "Phone number must contain only numbers.",
     }),
+  username: Joi.string().min(3).max(30).optional(),
+  language_preference: Joi.string().valid("eng", "am", "orm", "som", "tir", "sid").optional(),
 });
 
 const validateUserUpdate = (req, res, next) => {
   const { error } = updateUserSchema.validate(req.body);
   if (error) {
-    return res
-      .status(400)
-      .json({ success: false, message: error.details[0].message });
+    const detail = error.details[0];
+    const path = detail.path[0];
+
+    // Map camelCase fields to snake_case for locale keys
+    const fieldMapping = {
+      firstName: "first_name",
+      lastName: "last_name",
+      phoneNumber: "phone_number",
+    };
+    const fieldKey = fieldMapping[path] || path;
+    let message = detail.message;
+
+    if (req.t) {
+      const field = req.t(`fields.${fieldKey}`);
+      if (detail.type === "any.required" || detail.type === "string.empty") {
+        message = req.t("errors.field_required").replace("{{field}}", field);
+      } else if (detail.type === "string.min") {
+        message = req.t("errors.min_length")
+          .replace("{{field}}", field)
+          .replace("{{min}}", detail.context.limit);
+      } else if (detail.type === "string.max") {
+        message = req.t("errors.max_length")
+          .replace("{{field}}", field)
+          .replace("{{max}}", detail.context.limit);
+      } else if (detail.type === "string.length") {
+        message = req.t("errors.min_length")
+          .replace("{{field}}", field)
+          .replace("{{min}}", detail.context.limit);
+      }
+    }
+
+    return res.status(400).json({ success: false, message });
   }
   next();
 };
@@ -105,9 +161,24 @@ const updatePasswordSchema = Joi.object({
 const validatePassword = (req, res, next) => {
   const { error } = updatePasswordSchema.validate(req.body);
   if (error) {
-    return res
-      .status(400)
-      .json({ success: false, message: error.details[0].message });
+    const detail = error.details[0];
+    const fieldKey = detail.context.label || detail.path[0];
+    let message = detail.message;
+
+    if (req.t) {
+      // Translate the field label
+      const field = req.t(`fields.${fieldKey}`);
+
+      if (detail.type === "any.required" || detail.type === "string.empty") {
+        message = req.t("errors.field_required").replace("{{field}}", field);
+      } else if (detail.type === "string.min") {
+        message = req.t("errors.min_length")
+          .replace("{{field}}", field)
+          .replace("{{min}}", detail.context.limit);
+      }
+    }
+
+    return res.status(400).json({ success: false, message });
   }
   next();
 };
@@ -134,9 +205,26 @@ const loginSchema = Joi.object({
 const validateLoginInfo = (req, res, next) => {
   const { error } = loginSchema.validate(req.body);
   if (error) {
-    return res
-      .status(400)
-      .json({ success: false, message: error.details[0].message });
+    const detail = error.details[0];
+    const fieldKey = detail.context.label || detail.path[0];
+    let message = detail.message;
+
+    if (req.t) {
+      const field = req.t(`fields.${fieldKey}`);
+      if (detail.type === "any.required" || detail.type === "string.empty") {
+        message = req.t("errors.field_required").replace("{{field}}", field);
+      } else if (detail.type === "string.length") {
+        message = req.t("errors.min_length")
+          .replace("{{field}}", field)
+          .replace("{{min}}", detail.context.limit);
+      } else if (detail.type === "string.min") {
+        message = req.t("errors.min_length")
+          .replace("{{field}}", field)
+          .replace("{{min}}", detail.context.limit);
+      }
+    }
+
+    return res.status(400).json({ success: false, message });
   }
   next();
 };

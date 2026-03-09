@@ -6,7 +6,7 @@ const AdministrativeUnit = require("../models/administrativeUnitModel");
 const Role = require("../models/roleModel");
 const Permission = require("../models/permissionModel");
 const UserPermission = require("../models/userPermissionModel");
-
+const RolePermission = require("../models/rolePermissionModel");
 
 
 const protect = (req, res, next) => {
@@ -24,15 +24,48 @@ const protect = (req, res, next) => {
   }
 
   // Verify token
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+  jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
     if (err) {
       return next(new AppError("Invalid token. Please log in again.", 401));
     }
 
-    // Attach user data to request object
-    req.user = decoded
- // assuming your token contains user info
-    next();
+    try {
+      // Correctly access the nested payload if it exists
+      const tokenPayload = decoded.payload || decoded;
+      const userId = tokenPayload.user_id;
+
+      // Fetch fresh user data (especially language_preference as requested)
+      const user = await User.findByPk(userId, {
+        attributes: ["user_id", "status", "language_preference"]
+      });
+
+      if (!user) {
+        console.error(`Auth Error: User with ID ${userId} not found in DB.`);
+        return next(new AppError("User no longer exists.", 401));
+      }
+
+      if (user.status === "DEACTIVATED") {
+        return next(new AppError("Your account has been deactivated.", 401));
+      }
+
+      // Attach user data to request object
+      // Combine decoded token payload with fresh DB data
+      req.user = {
+        payload: {
+          ...tokenPayload,
+          language_preference: user.language_preference
+        }
+      };
+
+      // Override global i18n if no header was provided (DB is the source of truth for profile)
+      if (!req.headers["accept-language"]) {
+        req.lang = user.language_preference || req.lang;
+      }
+
+      next();
+    } catch (error) {
+      next(error);
+    }
   });
 };
 
@@ -116,23 +149,23 @@ const assignmentMiddleware = async (req, res, next) => {
     }
 
     // 8️⃣ Attach context to request
-req.user = {
-  id: user.user_id,
-  status: user.status,
-  assignment: {
-    id: assignment.id,
-  },
-  unit: {
-    id: unit.id,
-    level: unit.level,
-    parent_id: unit.parent_id,
-    name: unit.name,
-  },
-  role: {
-    id: role.id,
-    name: role.name,
-  },
-};
+    req.user = {
+      id: user.user_id,
+      status: user.status,
+      assignment: {
+        id: assignment.id,
+      },
+      unit: {
+        id: unit.id,
+        level: unit.level,
+        parent_id: unit.parent_id,
+        name: unit.name,
+      },
+      role: {
+        id: role.id,
+        name: role.name,
+      },
+    };
 
 
     next();
@@ -145,11 +178,12 @@ const permissionMiddleware = (requiredPermissionName) => {
   return async (req, res, next) => {
     try {
       // 1️⃣ Ensure assignmentMiddleware ran
-      if (!req.user || !req.user.assignment) {
+      if (!req.user || !req.user.assignment || !req.user.role) {
         return next(new AppError("Unauthorized", 401));
       }
 
       const assignmentId = req.user.assignment.id;
+      const roleId = req.user.role.id;
 
       // 2️⃣ Find permission by name
       const permission = await Permission.findOne({
@@ -157,7 +191,6 @@ const permissionMiddleware = (requiredPermissionName) => {
       });
 
       if (!permission) {
-        // Developer/config error
         return next(
           new AppError(
             `Permission '${requiredPermissionName}' is not defined`,
@@ -166,7 +199,19 @@ const permissionMiddleware = (requiredPermissionName) => {
         );
       }
 
-      // 3️⃣ Check if user has this permission
+      // 3️⃣ Check Role-level permission (The Standard)
+      const rolePermission = await RolePermission.findOne({
+        where: {
+          role_id: roleId,
+          permission_id: permission.id,
+        },
+      });
+
+      if (rolePermission) {
+        return next(); // Permission granted by Role
+      }
+
+      // 4️⃣ Check User-level override (The Exception)
       const userPermission = await UserPermission.findOne({
         where: {
           assignment_id: assignmentId,
@@ -174,17 +219,17 @@ const permissionMiddleware = (requiredPermissionName) => {
         },
       });
 
-      if (!userPermission) {
-        return next(
-          new AppError(
-            "You do not have permission to perform this action",
-            403
-          )
-        );
+      if (userPermission) {
+        return next(); // Permission granted by Override
       }
 
-      // 4️⃣ Permission granted
-      next();
+      // 5️⃣ Permission denied
+      return next(
+        new AppError(
+          "You do not have permission to perform this action",
+          403
+        )
+      );
     } catch (error) {
       next(error);
     }

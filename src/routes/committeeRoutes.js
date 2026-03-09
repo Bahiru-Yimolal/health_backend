@@ -10,7 +10,7 @@ const {
   createAttendanceController,
   getUserAttendanceController,
   getCommitteeAttendanceController,
-  getAttendanceBySectorController,
+  getAttendanceByHealthCenterController,
   getAttendanceReportController,
   updateAttendanceCommentController
 } = require("../controllers/committeeControllers");
@@ -19,7 +19,7 @@ const {
   validateAssignCommittee,
   validateUpdateCommitteInput,
   validateAttendanceInput,
-} = require("../validators/sectorValidators");
+} = require("../validators/healthCenterValidators");
 
 const { protect, verifySubcityLeader } = require("../middlewares/authMiddleware");
 
@@ -42,8 +42,8 @@ router
   .get(protect, getCommitteeAttendanceController);
 
 router
-  .route("/sector/:page/:limit")
-  .get(protect, getAttendanceBySectorController);
+  .route("/healthCenter/:page/:limit")
+  .get(protect, getAttendanceByHealthCenterController);
 
 router
   .route("/create-attencance")
@@ -69,7 +69,7 @@ router
     validateAssignCommittee,
     assignCommitteeController
   );
-router.route("/:sector_id").get(protect, verifySubcityLeader, getAllCommitteController);
+router.route("/:healthCenter_id").get(protect, verifySubcityLeader, getAllCommitteController);
 router
   .route("/updateName/:committee_id")
   .patch(

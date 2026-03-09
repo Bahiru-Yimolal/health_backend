@@ -28,6 +28,15 @@ const User = sequelize.define(
       allowNull: true,
       unique: true,
     },
+    username: {
+      type: DataTypes.STRING(100),
+      allowNull: true, // Optional for now, or unique if required
+      unique: true,
+    },
+    language_preference: {
+      type: DataTypes.ENUM("eng", "am", "orm", "som", "tir", "sid"),
+      defaultValue: "eng",
+    },
     password: {
       type: DataTypes.STRING,
       allowNull: false,

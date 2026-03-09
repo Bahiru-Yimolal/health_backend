@@ -14,7 +14,7 @@ const AdministrativeUnit = sequelize.define(
       allowNull: false,
     },
     level: {
-      type: DataTypes.ENUM("ETHIOPIA", "CITY", "SUBCITY", "SECTOR"),
+      type: DataTypes.ENUM("ETHIOPIA", "CITY", "SUBCITY", "HEALTH_CENTER", "WOREDA", "KETENA", "BLOCK"),
       allowNull: false,
     },
     parent_id: {
@@ -28,6 +28,7 @@ const AdministrativeUnit = sequelize.define(
   },
   {
     timestamps: true,
+    paranoid: true, // Enables soft deletes
     tableName: "AdministrativeUnits",
   }
 );
