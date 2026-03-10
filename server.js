@@ -22,6 +22,11 @@ sequelize
   .sync({ alter: true })
   .then(async () => {
     console.log("Database synced successfully");
+
+    // Sync Permissions from code configuration
+    const syncPermissions = require("./src/utils/permissionSync");
+    await syncPermissions();
+
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });

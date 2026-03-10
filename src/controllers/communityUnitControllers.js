@@ -80,9 +80,9 @@ const deleteWoredaController = async (req, res, next) => {
 
 const createKetenaController = async (req, res, next) => {
     try {
-        const { name, woredaId } = req.body;
+        const { name, woreda_id } = req.body;
 
-        const newKetena = await createKetenaService(name, woredaId, req.user);
+        const newKetena = await createKetenaService(name, woreda_id, req.user);
 
         res.status(201).json({
             success: true,

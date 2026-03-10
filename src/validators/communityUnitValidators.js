@@ -14,7 +14,7 @@ const ketenaCreationSchema = Joi.object({
         "string.empty": "errors.ketena_name_required",
         "any.required": "errors.ketena_name_required",
     }),
-    woredaId: Joi.string().uuid().required().messages({
+    woreda_id: Joi.string().uuid().required().messages({
         "string.empty": "errors.woreda_id_required",
         "any.required": "errors.woreda_id_required",
         "string.guid": "errors.invalid_uuid"

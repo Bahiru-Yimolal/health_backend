@@ -98,7 +98,7 @@ const createFamilyService = async (familyData, user) => {
             guardian_gender,
             guardian_dob,
             guardian_phone_number,
-            created_by: user.user_id,
+            created_by: user.id,
         }, { transaction });
 
         // 4. Create Pregnant Mother if provided

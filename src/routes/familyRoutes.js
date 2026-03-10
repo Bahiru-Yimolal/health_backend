@@ -35,7 +35,7 @@ router.post(
     "/",
     protect,
     assignmentMiddleware,
-    levelGuard(["HEALTH_CENTER"]),
+    // levelGuard(["HEALTH_CENTER"]),
     permissionMiddleware("MANAGE_FAMILIES"),
     validateFamilyCreationInput,
     createFamilyController
@@ -46,7 +46,7 @@ router.get(
     "/:id",
     protect,
     assignmentMiddleware,
-    levelGuard(["HEALTH_CENTER"]),
+    // levelGuard(["HEALTH_CENTER"]),
     permissionMiddleware("MANAGE_FAMILIES"),
     getFamilyByIdController
 );
@@ -56,7 +56,7 @@ router.get(
     "/creator/:creatorId",
     protect,
     assignmentMiddleware,
-    levelGuard(["HEALTH_CENTER"]),
+    // levelGuard(["HEALTH_CENTER"]),
     permissionMiddleware("MANAGE_FAMILIES"),
     getFamiliesByCreatorController
 );
@@ -66,7 +66,7 @@ router.get(
     "/filter",
     protect,
     assignmentMiddleware,
-    levelGuard(["HEALTH_CENTER"]),
+    // levelGuard(["HEALTH_CENTER"]),
     permissionMiddleware("MANAGE_FAMILIES"),
     getFamiliesByAdminUnitController
 );
@@ -76,7 +76,7 @@ router.get(
     "/assigned/me",
     protect,
     assignmentMiddleware,
-    levelGuard(["HEALTH_CENTER"]),
+    // levelGuard(["HEALTH_CENTER"]),
     permissionMiddleware("MANAGE_FAMILIES"),
     getAssignedFamiliesController
 );
@@ -86,7 +86,7 @@ router.put(
     "/:id",
     protect,
     assignmentMiddleware,
-    levelGuard(["HEALTH_CENTER"]),
+    // levelGuard(["HEALTH_CENTER"]),
     permissionMiddleware("MANAGE_FAMILIES"),
     validateFamilyUpdateInput,
     updateFamilyController
@@ -97,7 +97,7 @@ router.delete(
     "/:id",
     protect,
     assignmentMiddleware,
-    levelGuard(["HEALTH_CENTER"]),
+    // levelGuard(["HEALTH_CENTER"]),
     permissionMiddleware("MANAGE_FAMILIES"),
     deleteFamilyController
 );

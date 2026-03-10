@@ -96,11 +96,11 @@ const deleteWoredaService = async (woredaId, user) => {
 
 // --- Ketena Services ---
 
-const createKetenaService = async (name, woredaId, user) => {
+const createKetenaService = async (name, woreda_id, user) => {
     try {
         // 1. Verify Woreda belongs to User's Health Center
         const parentWoreda = await AdministrativeUnit.findOne({
-            where: { id: woredaId, level: "WOREDA", parent_id: user.unit.id },
+            where: { id: woreda_id, level: "WOREDA", parent_id: user.unit.id },
         });
 
         if (!parentWoreda) {
@@ -109,7 +109,7 @@ const createKetenaService = async (name, woredaId, user) => {
 
         // 2. Check for duplicate ketena under the same woreda
         const existingKetena = await AdministrativeUnit.findOne({
-            where: { name, level: "KETENA", parent_id: woredaId },
+            where: { name, level: "KETENA", parent_id: woreda_id },
         });
 
         if (existingKetena) {
@@ -120,7 +120,7 @@ const createKetenaService = async (name, woredaId, user) => {
         const newKetena = await AdministrativeUnit.create({
             name,
             level: "KETENA",
-            parent_id: woredaId,
+            parent_id: woreda_id,
         });
 
         return newKetena;

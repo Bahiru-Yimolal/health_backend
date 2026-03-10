@@ -33,24 +33,36 @@ const assignUserToUnit = async ({ userId, unitId, roleId, permissions = null }) 
     );
 
     // --- HYBRID RBAC TRANSITION ---
-    // 1. Ensure Role-based permissions exist (The Standard)
+    // 1. Ensure Role-based permissions are synced (The Standard)
     const standardPermNames = DefaultRolePermissions[role.name] || [];
-    if (standardPermNames.length > 0) {
-      const standardPerms = await Permission.findAll({
-        where: { name: standardPermNames },
-        transaction,
-      });
 
-      // Ensure standard permissions are linked to the Role
-      await Promise.all(
-        standardPerms.map((perm) =>
-          RolePermission.findOrCreate({
-            where: { role_id: role.id, permission_id: perm.id },
-            transaction,
-          })
-        )
-      );
-    }
+    // Get all current permissions for this role in DB
+    const existingRPs = await RolePermission.findAll({
+      where: { role_id: role.id },
+      transaction,
+    });
+    const existingRPIds = existingRPs.map(rp => rp.permission_id);
+
+    // Get IDs for standard permissions defined in code
+    const standardPerms = await Permission.findAll({
+      where: { name: standardPermNames },
+      transaction,
+    });
+    const standardPermIds = standardPerms.map(p => p.id);
+
+    // Remove permissions that are NO LONGER in the code config
+    await Promise.all(
+      existingRPs
+        .filter(rp => !standardPermIds.includes(rp.permission_id))
+        .map(rp => rp.destroy({ transaction }))
+    );
+
+    // Add permissions that are NEW in the code config
+    await Promise.all(
+      standardPermIds
+        .filter(id => !existingRPIds.includes(id))
+        .map(id => RolePermission.create({ role_id: role.id, permission_id: id }, { transaction }))
+    );
 
     // 2. Handle User-specific Overrides (The Exception)
     if (permissions && Array.isArray(permissions) && permissions.length > 0) {

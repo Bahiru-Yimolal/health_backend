@@ -9,10 +9,6 @@ const Roles = {
 };
 
 const Permissions = {
-    CREATE_FOLDER: "CREATE_FOLDER",
-    READ_FOLDER: "READ_FOLDER",
-    UPDATE_FOLDER: "UPDATE_FOLDER",
-    DELETE_FOLDER: "DELETE_FOLDER",
     ADMIN_PERMISSIONS: "ADMIN_PERMISSIONS",
     MANAGE_COMMUNITY_UNITS: "MANAGE_COMMUNITY_UNITS",
     MANAGE_FAMILIES: "MANAGE_FAMILIES",
@@ -23,22 +19,19 @@ const Permissions = {
 
 const DefaultRolePermissions = {
     [Roles.ADMIN]: [
-        Permissions.CREATE_FOLDER,
-        Permissions.READ_FOLDER,
-        Permissions.UPDATE_FOLDER,
-        Permissions.DELETE_FOLDER,
         Permissions.ADMIN_PERMISSIONS,
         Permissions.MANAGE_COMMUNITY_UNITS,
     ],
     [Roles.HEAD]: [
-        Permissions.CREATE_FOLDER,
-        Permissions.READ_FOLDER,
-        Permissions.UPDATE_FOLDER,
-        Permissions.DELETE_FOLDER,
+        Permissions.EXPORT_REPORTS,
     ],
     [Roles.SUPERVISOR]: [
-        Permissions.READ_FOLDER,
         Permissions.ASSIGN_PC_WORKERS,
+        Permissions.MANAGE_FAMILIES,
+        Permissions.MANAGE_COMMUNITY_UNITS,
+    ],
+    [Roles.PC_WORKER]: [
+        Permissions.MANAGE_FAMILIES,
     ],
 };
 
