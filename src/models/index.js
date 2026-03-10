@@ -23,6 +23,10 @@ UserAssignment.belongsTo(AdministrativeUnit, { foreignKey: "unit_id" });
 Role.hasMany(UserAssignment, { foreignKey: "role_id" });
 UserAssignment.belongsTo(Role, { foreignKey: "role_id" });
 
+// AdministrativeUnit Self-reference for Hierarchy
+AdministrativeUnit.hasMany(AdministrativeUnit, { foreignKey: "parent_id", as: "SubUnits" });
+AdministrativeUnit.belongsTo(AdministrativeUnit, { foreignKey: "parent_id", as: "ParentUnit" });
+
 // --- HYBRID RBAC ASSOCIATIONS ---
 
 // 1. Role-based Permissions (The Standard)

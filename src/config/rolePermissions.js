@@ -4,6 +4,7 @@ const Roles = {
     ADMIN: "ADMIN",
     HEAD: "HEAD",
     SUPERVISOR: "SUPERVISOR",
+    PC_WORKER: "PC_WORKER",
     // Add other roles as needed
 };
 

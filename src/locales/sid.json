@@ -104,7 +104,11 @@
         "unit_ids_required": "Ugu yiraanni mittu Unit ID hasiissanno",
         "unit_ids_must_be_array": "Unit ID-da arraynni shiqishshara dandiinanni",
         "invalid_unit_for_pc_worker": "PC Worker ramaddira unit level sokkakkiho. Block ikka hasiissanno.",
-        "unit_outside_jurisdiction": "Dooramino unit-da giddo mitte woyte roore fayyaa xibbakki jurisdictionni goffichoho."
+        "unit_outside_jurisdiction": "Dooramino unit-da giddo mitte woyte roore fayyaa xibbakki jurisdictionni goffichoho.",
+        "phone_number_exists": "Tenne silkete kiyironni galmeessinoonni maatii hara're no.",
+        "pc_worker_unauthorized_block": "Tenne blocke giddo maatii galmeessate eebbimma di herre'anno.",
+        "delete_family_unauthorized": "Tenne maatete galme hunate eebbimma di herre'anno.",
+        "delete_family_error": "Maatete galme huna di dandiinoonni."
     },
     "success": {
         "user_registered": "Fayyaanchi lowo geeshsha galmeessinoonni.",
@@ -144,6 +148,11 @@
         "block_deleted": "Block danchummatenni hunamino",
         "family_created": "Maatii danchummatenni kalaqamino",
         "family_updated": "Maatii danchummatenni haarossamino",
+        "family_deleted": "Maatete galme hunate loosi gumaabbino.",
+        "family_fetched": "Maatii lowo geeshsha afinoonni",
+        "families_fetched_by_user": "Fayyaanchi galmeessino maatii lowo geeshsha afinoonni",
+        "families_filtered": "Bulchiinsu handaarinni calalantino maatii gumaabbite afinoonni",
+        "assigned_families_fetched": "Ramadantino maatii gumaabbite afinoonni",
         "pc_worker_assigned": "PC Worker danchummatenni unitra ramanninoonni."
     }
 }

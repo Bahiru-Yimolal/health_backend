@@ -1,4 +1,4 @@
-const { Family, PregnantMother, LactatingMother, Child, AdministrativeUnit } = require("../models");
+const { Family, PregnantMother, LactatingMother, Child, AdministrativeUnit, UserAssignment } = require("../models");
 const sequelize = require("../config/database");
 const { AppError } = require("../middlewares/errorMiddleware");
 
@@ -37,22 +37,48 @@ const createFamilyService = async (familyData, user) => {
             throw new AppError("errors.block_not_found", 404);
         }
 
-        // We must verify if this block ultimately belongs to the user's Health Center
-        // Block -> Ketena -> Woreda -> Health Center
-        const ketena = await AdministrativeUnit.findOne({ where: { id: block.parent_id, level: "KETENA" }, transaction });
-        if (!ketena) throw new AppError("errors.block_not_found", 404);
+        // --- Jurisdiction Check ---
+        if (user.role.name === "PC_WORKER") {
+            // PC Workers are assigned directly to Blocks. 
+            // We must ensure the block_id they provided is one of their assigned units.
+            const assignment = await UserAssignment.findOne({
+                where: { user_id: user.id, unit_id: block_id },
+                transaction
+            });
 
-        const woreda = await AdministrativeUnit.findOne({ where: { id: ketena.parent_id, level: "WOREDA", parent_id: user.unit.id }, transaction });
-        if (!woreda) throw new AppError("errors.block_not_found", 404); // Not in their jurisdiction
+            if (!assignment) {
+                throw new AppError("errors.pc_worker_unauthorized_block", 403);
+            }
+        } else {
+            // Regular Health Center Admin logic:
+            // We must verify if this block ultimately belongs to the user's Health Center
+            // Block -> Ketena -> Woreda -> Health Center
+            const ketena = await AdministrativeUnit.findOne({ where: { id: block.parent_id, level: "KETENA" }, transaction });
+            if (!ketena) throw new AppError("errors.block_not_found", 404);
 
-        // 2. Check for Duplicate Registration Number
-        const existingFamily = await Family.findOne({
+            const woreda = await AdministrativeUnit.findOne({ where: { id: ketena.parent_id, level: "WOREDA", parent_id: user.unit.id }, transaction });
+            if (!woreda) throw new AppError("errors.block_not_found", 404); // Not in their jurisdiction
+        }
+
+        // 2. Check for Duplicate Registration Number or Phone Number
+        const existingRegistration = await Family.findOne({
             where: { registration_number },
             transaction
         });
 
-        if (existingFamily) {
+        if (existingRegistration) {
             throw new AppError("errors.registration_number_exists", 400);
+        }
+
+        if (phone_number) {
+            const existingPhone = await Family.findOne({
+                where: { phone_number },
+                transaction
+            });
+
+            if (existingPhone) {
+                throw new AppError("errors.phone_number_exists", 400);
+            }
         }
 
         // 3. Create the Family core record
@@ -126,32 +152,83 @@ const updateFamilyService = async (familyId, familyData, user) => {
             throw new AppError("errors.family_not_found", 404);
         }
 
-        // Check Jurisdiction of the current block
-        // (Ensure the Health Center admin still has rights to this family's original block)
-        const block = await AdministrativeUnit.findOne({
-            where: { id: family.block_id, level: "BLOCK" },
-            transaction
-        });
-        if (!block) throw new AppError("errors.family_not_found", 404);
-
-        const ketena = await AdministrativeUnit.findOne({ where: { id: block.parent_id, level: "KETENA" }, transaction });
-        const woreda = await AdministrativeUnit.findOne({ where: { id: ketena.parent_id, level: "WOREDA", parent_id: user.unit.id }, transaction });
-
-        if (!woreda) {
-            throw new AppError("errors.family_not_found", 404); // Outside jurisdiction
-        }
-
-        // If they are attempting to move the family to a new block, verify the new block is also in jurisdiction
-        if (familyData.block_id && familyData.block_id !== family.block_id) {
-            const newBlock = await AdministrativeUnit.findOne({
-                where: { id: familyData.block_id, level: "BLOCK" },
+        // --- Jurisdiction Check ---
+        if (user.role.name === "PC_WORKER") {
+            // PC Workers can only update families in their assigned blocks
+            const assignment = await UserAssignment.findOne({
+                where: { user_id: user.id, unit_id: family.block_id },
                 transaction
             });
-            if (!newBlock) throw new AppError("errors.block_not_found", 404);
 
-            const newKetena = await AdministrativeUnit.findOne({ where: { id: newBlock.parent_id, level: "KETENA" }, transaction });
-            const newWoreda = await AdministrativeUnit.findOne({ where: { id: newKetena.parent_id, level: "WOREDA", parent_id: user.unit.id }, transaction });
-            if (!newWoreda) throw new AppError("errors.block_not_found", 404);
+            if (!assignment) {
+                throw new AppError("errors.family_not_found", 404); // Or a more specific permission error
+            }
+
+            // If they are attempting to move the family to a new block, verify the new block is also in their jurisdiction
+            if (familyData.block_id && familyData.block_id !== family.block_id) {
+                const newBlockAssignment = await UserAssignment.findOne({
+                    where: { user_id: user.id, unit_id: familyData.block_id },
+                    transaction
+                });
+                if (!newBlockAssignment) {
+                    throw new AppError("errors.pc_worker_unauthorized_block", 403);
+                }
+            }
+        } else {
+            // Regular Health Center Admin logic:
+            // Ensure the Health Center admin still has rights to this family's original block
+            const block = await AdministrativeUnit.findOne({
+                where: { id: family.block_id, level: "BLOCK" },
+                transaction
+            });
+            if (!block) throw new AppError("errors.family_not_found", 404);
+
+            const ketena = await AdministrativeUnit.findOne({ where: { id: block.parent_id, level: "KETENA" }, transaction });
+            const woreda = await AdministrativeUnit.findOne({ where: { id: ketena.parent_id, level: "WOREDA", parent_id: user.unit.id }, transaction });
+
+            if (!woreda) {
+                throw new AppError("errors.family_not_found", 404); // Outside jurisdiction
+            }
+
+            // If they are attempting to move the family to a new block, verify the new block is also in jurisdiction
+            if (familyData.block_id && familyData.block_id !== family.block_id) {
+                const newBlock = await AdministrativeUnit.findOne({
+                    where: { id: familyData.block_id, level: "BLOCK" },
+                    transaction
+                });
+                if (!newBlock) throw new AppError("errors.block_not_found", 404);
+
+                const newKetena = await AdministrativeUnit.findOne({ where: { id: newBlock.parent_id, level: "KETENA" }, transaction });
+                const newWoreda = await AdministrativeUnit.findOne({ where: { id: newKetena.parent_id, level: "WOREDA", parent_id: user.unit.id }, transaction });
+                if (!newWoreda) throw new AppError("errors.block_not_found", 404);
+            }
+        }
+
+        // --- Duplicates Check ---
+        const { Op } = require("sequelize");
+
+        // 1. Check duplicate registration_number
+        if (familyData.registration_number && familyData.registration_number !== family.registration_number) {
+            const existingReg = await Family.findOne({
+                where: {
+                    registration_number: familyData.registration_number,
+                    id: { [Op.ne]: familyId }
+                },
+                transaction
+            });
+            if (existingReg) throw new AppError("errors.registration_number_exists", 400);
+        }
+
+        // 2. Check duplicate phone_number
+        if (familyData.phone_number && familyData.phone_number !== family.phone_number) {
+            const existingPhone = await Family.findOne({
+                where: {
+                    phone_number: familyData.phone_number,
+                    id: { [Op.ne]: familyId }
+                },
+                transaction
+            });
+            if (existingPhone) throw new AppError("errors.phone_number_exists", 400);
         }
 
         // Update core family record (excluding nested relations)
@@ -211,7 +288,307 @@ const updateFamilyService = async (familyId, familyData, user) => {
     }
 };
 
+const deleteFamilyService = async (familyId, user) => {
+    const transaction = await sequelize.transaction();
+
+    try {
+        const family = await Family.findOne({ where: { id: familyId }, transaction });
+        if (!family) {
+            throw new AppError("errors.family_not_found", 404);
+        }
+
+        // --- Jurisdiction / Ownership Check ---
+        if (user.role.name === "PC_WORKER") {
+            // PC Workers can only delete families they personally created
+            if (family.created_by !== user.id) {
+                throw new AppError("errors.delete_family_unauthorized", 403);
+            }
+        } else {
+            // Regular Health Center Admin logic:
+            // Ensure the family is in their jurisdiction (using its current block)
+            const block = await AdministrativeUnit.findOne({
+                where: { id: family.block_id, level: "BLOCK" },
+                transaction
+            });
+            if (!block) throw new AppError("errors.family_not_found", 404);
+
+            const ketena = await AdministrativeUnit.findOne({ where: { id: block.parent_id, level: "KETENA" }, transaction });
+            const woreda = await AdministrativeUnit.findOne({ where: { id: ketena.parent_id, level: "WOREDA", parent_id: user.unit.id }, transaction });
+
+            if (!woreda) {
+                throw new AppError("errors.delete_family_unauthorized", 403);
+            }
+        }
+
+        // --- Soft Delete Family and its Dependents ---
+        // (Assuming PregnantMother, LactatingMother, and Child all have paranoid: true in their models)
+        await PregnantMother.destroy({ where: { family_id: familyId }, transaction });
+        await LactatingMother.destroy({ where: { family_id: familyId }, transaction });
+        await Child.destroy({ where: { family_id: familyId }, transaction });
+        await family.destroy({ transaction });
+
+        await transaction.commit();
+        return true;
+    } catch (error) {
+        await transaction.rollback();
+        if (error instanceof AppError) throw error;
+        console.error("Family Deletion Error:", error);
+        throw new AppError("errors.delete_family_error", 500);
+    }
+};
+
+const getFamilyByIdService = async (familyId, user) => {
+    try {
+        const family = await Family.findOne({
+            where: { id: familyId },
+            include: [
+                { model: PregnantMother },
+                { model: LactatingMother },
+                { model: Child }
+            ]
+        });
+
+        if (!family) {
+            throw new AppError("errors.family_not_found", 404);
+        }
+
+        // --- Jurisdiction Check ---
+        if (user.role.name === "PC_WORKER") {
+            // PC Workers can only access families in their assigned blocks
+            const assignment = await UserAssignment.findOne({
+                where: { user_id: user.id, unit_id: family.block_id }
+            });
+
+            if (!assignment) {
+                throw new AppError("errors.family_not_found", 404);
+            }
+        } else {
+            // Regular Health Center Admin logic:
+            // Ensure the family is in their jurisdiction (using its current block)
+            const block = await AdministrativeUnit.findOne({
+                where: { id: family.block_id, level: "BLOCK" }
+            });
+            if (!block) throw new AppError("errors.family_not_found", 404);
+
+            const ketena = await AdministrativeUnit.findOne({ where: { id: block.parent_id, level: "KETENA" } });
+            if (!ketena) throw new AppError("errors.family_not_found", 404);
+
+            const woreda = await AdministrativeUnit.findOne({ where: { id: ketena.parent_id, level: "WOREDA", parent_id: user.unit.id } });
+
+            if (!woreda) {
+                throw new AppError("errors.family_not_found", 404);
+            }
+        }
+
+        return family;
+    } catch (error) {
+        if (error instanceof AppError) throw error;
+        console.error("Fetch Family Error:", error);
+        throw new AppError("errors.internal_error", 500);
+    }
+};
+
+const getFamiliesByCreatorService = async (creatorId, page, limit, user) => {
+    try {
+        const offset = (page - 1) * limit;
+
+        // Fetch families created by the specific user
+        const { count, rows } = await Family.findAndCountAll({
+            where: { created_by: creatorId },
+            limit: parseInt(limit),
+            offset: parseInt(offset),
+            order: [["createdAt", "DESC"]],
+        });
+
+        return {
+            total: count,
+            pages: Math.ceil(count / limit),
+            currentPage: parseInt(page),
+            limit: parseInt(limit),
+            families: rows,
+        };
+    } catch (error) {
+        if (error instanceof AppError) throw error;
+        console.error("Fetch Families by Creator Error:", error);
+        throw new AppError("errors.internal_error", 500);
+    }
+};
+
+const getFamiliesByAdminUnitService = async (filters, page, limit, user) => {
+    try {
+        const {
+            block_id,
+            ketena_id,
+            woreda_id,
+            health_center_id,
+            subcity_id,
+            city_id,
+        } = filters;
+        const offset = (page - 1) * limit;
+
+        let whereCondition = {};
+        let blockInclude = {
+            model: AdministrativeUnit,
+            as: "Block",
+            required: true,
+        };
+
+        // Waterfall Logic: Priority from most specific (Block) to least specific (City)
+        if (block_id) {
+            whereCondition.block_id = block_id;
+        } else if (ketena_id) {
+            blockInclude.where = { parent_id: ketena_id };
+        } else if (woreda_id) {
+            blockInclude.include = [
+                {
+                    model: AdministrativeUnit,
+                    as: "ParentUnit", // Ketena
+                    where: { parent_id: woreda_id },
+                    required: true,
+                },
+            ];
+        } else if (health_center_id) {
+            blockInclude.include = [
+                {
+                    model: AdministrativeUnit,
+                    as: "ParentUnit", // Ketena
+                    required: true,
+                    include: [
+                        {
+                            model: AdministrativeUnit,
+                            as: "ParentUnit", // Woreda
+                            where: { parent_id: health_center_id },
+                            required: true,
+                        },
+                    ],
+                },
+            ];
+        } else if (subcity_id) {
+            blockInclude.include = [
+                {
+                    model: AdministrativeUnit,
+                    as: "ParentUnit", // Ketena
+                    required: true,
+                    include: [
+                        {
+                            model: AdministrativeUnit,
+                            as: "ParentUnit", // Woreda
+                            required: true,
+                            include: [
+                                {
+                                    model: AdministrativeUnit,
+                                    as: "ParentUnit", // Health Center
+                                    where: { parent_id: subcity_id },
+                                    required: true,
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ];
+        } else if (city_id) {
+            blockInclude.include = [
+                {
+                    model: AdministrativeUnit,
+                    as: "ParentUnit", // Ketena
+                    required: true,
+                    include: [
+                        {
+                            model: AdministrativeUnit,
+                            as: "ParentUnit", // Woreda
+                            required: true,
+                            include: [
+                                {
+                                    model: AdministrativeUnit,
+                                    as: "ParentUnit", // Health Center
+                                    required: true,
+                                    include: [
+                                        {
+                                            model: AdministrativeUnit,
+                                            as: "ParentUnit", // Subcity
+                                            where: { parent_id: city_id },
+                                            required: true,
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ];
+        }
+
+        const { count, rows } = await Family.findAndCountAll({
+            where: whereCondition,
+            include: [blockInclude],
+            limit: parseInt(limit),
+            offset: parseInt(offset),
+            order: [["createdAt", "DESC"]],
+            distinct: true, // Important when using includes to get accurate count
+        });
+
+        return {
+            total: count,
+            pages: Math.ceil(count / limit),
+            currentPage: parseInt(page),
+            limit: parseInt(limit),
+            families: rows,
+        };
+    } catch (error) {
+        console.error("Fetch Families by Admin Unit Error:", error);
+        throw new AppError("errors.internal_error", 500);
+    }
+};
+
+const getAssignedFamiliesService = async (user, page, limit) => {
+    try {
+        const offset = (page - 1) * limit;
+
+        // Find all unit assignments for this user
+        const assignments = await UserAssignment.findAll({
+            where: { user_id: user.id },
+            attributes: ["unit_id"],
+        });
+
+        const assignedUnitIds = assignments.map((a) => a.unit_id);
+
+        if (assignedUnitIds.length === 0) {
+            return {
+                total: 0,
+                pages: 0,
+                currentPage: parseInt(page),
+                limit: parseInt(limit),
+                families: [],
+            };
+        }
+
+        // Fetch families in those specific blocks
+        const { count, rows } = await Family.findAndCountAll({
+            where: { block_id: assignedUnitIds },
+            limit: parseInt(limit),
+            offset: parseInt(offset),
+            order: [["createdAt", "DESC"]],
+        });
+
+        return {
+            total: count,
+            pages: Math.ceil(count / limit),
+            currentPage: parseInt(page),
+            limit: parseInt(limit),
+            families: rows,
+        };
+    } catch (error) {
+        console.error("Fetch Assigned Families Error:", error);
+        throw new AppError("errors.internal_error", 500);
+    }
+};
+
 module.exports = {
     createFamilyService,
     updateFamilyService,
+    deleteFamilyService,
+    getFamilyByIdService,
+    getFamiliesByCreatorService,
+    getFamiliesByAdminUnitService,
+    getAssignedFamiliesService,
 };

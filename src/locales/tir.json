@@ -104,7 +104,11 @@
         "unit_ids_required": "እንተወሓደ ሓደ መፍለዪ ዩኒት የድሊ እዩ",
         "unit_ids_must_be_array": "መፍለዪ ዩኒታት ብዝርዝር (array) ክቐርቡ ኣለዎም",
         "invalid_unit_for_pc_worker": "ንPC Worker ምደባ ዘይቅኑዕ ደረጃ ዩኒት እዩ። ብሎክ ክኸውን ኣለዎ።",
-        "unit_outside_jurisdiction": "ሓደ ወይ ካብኡ ንላዕሊ ዝተመርጹ ዩኒታት ካብ ስልጣን ጥዕና ጣብያኹም ወጻኢ እዮም።"
+        "unit_outside_jurisdiction": "ሓደ ወይ ካብኡ ንላዕሊ ዝተመርጹ ዩኒታት ካብ ስልጣን ጥዕና ጣብያኹም ወጻኢ እዮም።",
+        "phone_number_exists": "በዚ ቑፅሪ ቴሌፎን ዝተመዝገበ ስድራቤት ድሮ ኣሎ።",
+        "pc_worker_unauthorized_block": "ኣብዚ ብሎክ እዚ ስድራቤት ንምምዝጋብ ፍቓድ የብልኩምን።",
+        "delete_family_unauthorized": "ነዚ ስድራቤት መዝገብ ንምስራዝ ፍቓድ የብልኩምን።",
+        "delete_family_error": "መዝገብ ስድራቤት ምስራዝ ኣይተኻእለን።"
     },
     "success": {
         "user_registered": "ተጠቃሚ ብዝግባእ ተመዝጊቡ ኣሎ።",
@@ -144,6 +148,11 @@
         "block_deleted": "ብሎክ ብዓወት ተሰሪዙ",
         "family_created": "ስድራቤት ብዓወት ተመዝጊቡ",
         "family_updated": "ስድራቤት ብዓወት ተመሓይሹ",
+        "family_deleted": "መዝገብ ስድራቤት ብዝግባእ ተሰሪዙ ኣሎ።",
+        "family_fetched": "መረዳእታ ስድራቤት ብዝግባእ ተረኺቡ ኣሎ",
+        "families_fetched_by_user": "በተጠቃሚ ዝተመዝገቡ ስድራቤታት ብዝግባእ ተረኺቦም ኣለዉ",
+        "families_filtered": "ብመሰረት ምምሕዳራዊ ገደብ ዝተጻረዩ ስድራቤታት ብዝግባእ ተረኺቦም ኣለዉ",
+        "assigned_families_fetched": "ዝተመደቡ ስድራቤታት ብዝግባእ ተረኺቦም ኣለዉ",
         "pc_worker_assigned": "PC Worker ኣብቲ ዩኒት ብዝግባእ ተመዲቡ ኣሎ።"
     }
 }

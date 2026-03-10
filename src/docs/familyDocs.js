@@ -7,7 +7,7 @@
 
 /**
  * @swagger
- * /api/families:
+ * /families:
  *   post:
  *     summary: Register a new Family and all dependents
  *     tags: [Families]
@@ -140,7 +140,239 @@
  *       500:
  *         description: Internal server error creating family
  * 
- * /api/families/{id}:
+ * /families/{id}:
+ *   get:
+ *     summary: Fetch a specific Family record by ID including dependents
+ *     tags: [Families]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The Family UUID to fetch
+ *     responses:
+ *       200:
+ *         description: Family record fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Family record fetched successfully"
+ *                 data:
+ *                   type: object
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden (insufficient permissions)
+ *       404:
+ *         description: Family not found or outside jurisdiction
+ *       500:
+ *         description: Internal server error fetching family
+ *
+ * /families/creator/{creatorId}:
+ *   get:
+ *     summary: Fetch families registered by a specific user (with pagination)
+ *     tags: [Families]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: creatorId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The ID of the user who registered the families
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of records per page
+ *     responses:
+ *       200:
+ *         description: Successfully fetched families registered by the user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Families registered by the user fetched successfully"
+ *                 total:
+ *                   type: integer
+ *                   example: 50
+ *                 pages:
+ *                   type: integer
+ *                   example: 5
+ *                 currentPage:
+ *                   type: integer
+ *                   example: 1
+ *                 limit:
+ *                   type: integer
+ *                   example: 10
+ *                 families:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Family'
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden (insufficient permissions)
+ *       500:
+ *         description: Internal server error fetching families by creator
+ *
+ * /families/filter:
+ *   get:
+ *     summary: Fetch families filtered by administrative units (Woreda, Ketena, Block, etc.)
+ *     tags: [Families]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: city_id
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filter by City ID
+ *       - in: query
+ *         name: subcity_id
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filter by Subcity ID
+ *       - in: query
+ *         name: health_center_id
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filter by Health Center ID
+ *       - in: query
+ *         name: woreda_id
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filter by Woreda ID
+ *       - in: query
+ *         name: ketena_id
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filter by Ketena ID
+ *       - in: query
+ *         name: block_id
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filter by Block ID (Most specific)
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *     responses:
+ *       200:
+ *         description: Successfully fetched filtered families
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 total:
+ *                   type: integer
+ *                 pages:
+ *                   type: integer
+ *                 currentPage:
+ *                   type: integer
+ *                 limit:
+ *                   type: integer
+ *                 families:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Family'
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       500:
+ *         description: Internal server error filtering families
+ *
+ * /families/assigned/me:
+ *   get:
+ *     summary: Fetch families assigned to the current PC Worker (based on assignments)
+ *     tags: [Families]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *     responses:
+ *       200:
+ *         description: Successfully fetched assigned families
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                   example: "Assigned families fetched successfully"
+ *                 total:
+ *                   type: integer
+ *                 pages:
+ *                   type: integer
+ *                 currentPage:
+ *                   type: integer
+ *                 limit:
+ *                   type: integer
+ *                 families:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Family'
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error fetching assigned families
+ *
  *   put:
  *     summary: Update an existing Family and its dependents
  *     tags: [Families]
@@ -266,4 +498,29 @@
  *         description: Family or Block not found
  *       500:
  *         description: Internal server error updating
+ *
+ *   delete:
+ *     summary: Delete a Family record and its dependents
+ *     tags: [Families]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The Family UUID to delete
+ *     responses:
+ *       200:
+ *         description: Family deleted successfully
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden (PC Worker can only delete their own creation)
+ *       404:
+ *         description: Family not found
+ *       500:
+ *         description: Internal server error deleting family
  */

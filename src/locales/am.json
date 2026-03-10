@@ -104,7 +104,11 @@
         "unit_ids_required": "ቢያንስ አንድ የዩኒት መለያ ያስፈልጋል",
         "unit_ids_must_be_array": "የዩኒት መለያዎች በዝርዝር (array) መቅረብ አለባቸው",
         "invalid_unit_for_pc_worker": "ለወላጅ አሰልጣኝ ምደባ የተሳሳተ የዩኒት ደረጃ ነው። ብሎክ መሆን አለበት።",
-        "unit_outside_jurisdiction": "አንድ ወይም ከዚያ በላይ የተመረጡ ዩኒቶች ከእርስዎ የጤና ጣቢያ ስልጣን ውጭ ናቸው።"
+        "unit_outside_jurisdiction": "አንድ ወይም ከዚያ በላይ የተመረጡ ዩኒቶች ከእርስዎ የጤና ጣቢያ ስልጣን ውጭ ናቸው።",
+        "phone_number_exists": "ከዚህ ስልክ ቁጥር ጋር የተመዘገበ ቤተሰብ ቀድሞውኑ አለ።",
+        "pc_worker_unauthorized_block": "በዚህ ብሎክ ውስጥ ቤተሰብ ለመመዝገብ ፈቃድ የለዎትም።",
+        "delete_family_unauthorized": "ይህንን የቤተሰብ መዝገብ ለመሰረዝ ፈቃድ የለዎትም።",
+        "delete_family_error": "የቤተሰብ መዝገብ መሰረዝ አልተቻለም።"
     },
     "success": {
         "user_registered": "ተጠቃሚው በተሳካ ሁኔታ ተመዝግቧል።",
@@ -144,6 +148,11 @@
         "block_deleted": "ብሎክ በተሳካ ሁኔታ ተሰርዟል",
         "family_created": "የቤተሰብ መረጃ በተሳካ ሁኔታ ተመዝግቧል",
         "family_updated": "የቤተሰብ መረጃ በተሳካ ሁኔታ ተሻሽሏል",
+        "family_deleted": "የቤተሰብ መዝገብ በተሳካ ሁኔታ ተሰርዟል፡፡",
+        "family_fetched": "የቤተሰብ መረጃ በተሳካ ሁኔታ ተገኝቷል",
+        "families_fetched_by_user": "በተጠቃሚው የተመዘገቡ ቤተሰቦች በተሳካ ሁኔታ ተገኝተዋል",
+        "families_filtered": "በአስተዳደራዊ እርከን የተጣሩ ቤተሰቦች በተሳካ ሁኔታ ተገኝተዋል",
+        "assigned_families_fetched": "የተመደቡ ቤተሰቦች በተሳካ ሁኔታ ተገኝተዋል",
         "pc_worker_assigned": "የወላጅ አሰልጣኝ በዩኒቱ ውስጥ በተሳካ ሁኔታ ተመድቧል"
     }
 }

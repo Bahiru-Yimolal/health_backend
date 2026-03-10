@@ -7,7 +7,7 @@
 
 /**
  * @swagger
- * /api/community-units/woredas:
+ * /community-units/woredas:
  *   post:
  *     summary: Create a new Woreda
  *     tags: [Woredas]
@@ -60,7 +60,7 @@
 
 /**
  * @swagger
- * /api/community-units/woredas:
+ * /community-units/woredas:
  *   get:
  *     summary: List all Woredas under the user's Health Center
  *     tags: [Woredas]
@@ -98,7 +98,7 @@
 
 /**
  * @swagger
- * /api/community-units/woredas/{id}:
+ * /community-units/woredas/{id}:
  *   put:
  *     summary: Update a Woreda
  *     tags: [Woredas]
@@ -152,7 +152,7 @@
 
 /**
  * @swagger
- * /api/community-units/woredas/{id}:
+ * /community-units/woredas/{id}:
  *   delete:
  *     summary: Soft delete a Woreda
  *     tags: [Woredas]
@@ -199,7 +199,7 @@
 
 /**
  * @swagger
- * /api/community-units/ketenas:
+ * /community-units/ketenas:
  *   post:
  *     summary: Create a new Ketena
  *     tags: [Ketenas]
@@ -259,7 +259,7 @@
 
 /**
  * @swagger
- * /api/community-units/ketenas:
+ * /community-units/ketenas:
  *   get:
  *     summary: List all Ketenas under the user's Health Center
  *     tags: [Ketenas]
@@ -299,7 +299,7 @@
 
 /**
  * @swagger
- * /api/community-units/ketenas/all:
+ * /community-units/ketenas/all:
  *   get:
  *     summary: List all Ketenas under the user's entire Health Center
  *     tags: [Ketenas]
@@ -337,7 +337,7 @@
 
 /**
  * @swagger
- * /api/community-units/ketenas/{id}:
+ * /community-units/ketenas/{id}:
  *   put:
  *     summary: Update a Ketena
  *     tags: [Ketenas]
@@ -391,7 +391,7 @@
 
 /**
  * @swagger
- * /api/community-units/ketenas/{id}:
+ * /community-units/ketenas/{id}:
  *   delete:
  *     summary: Soft delete a Ketena
  *     tags: [Ketenas]
@@ -438,7 +438,7 @@
 
 /**
  * @swagger
- * /api/community-units/blocks:
+ * /community-units/blocks:
  *   post:
  *     summary: Create a new Block
  *     tags: [Blocks]
@@ -498,7 +498,7 @@
 
 /**
  * @swagger
- * /api/community-units/blocks:
+ * /community-units/blocks:
  *   get:
  *     summary: List all Blocks under a specific Ketena (verifying ownership)
  *     tags: [Blocks]
@@ -546,7 +546,7 @@
 
 /**
  * @swagger
- * /api/community-units/blocks/all:
+ * /community-units/blocks/all:
  *   get:
  *     summary: List all Blocks under the user's entire Health Center
  *     tags: [Blocks]
@@ -584,7 +584,7 @@
 
 /**
  * @swagger
- * /api/community-units/blocks/{id}:
+ * /community-units/blocks/{id}:
  *   put:
  *     summary: Update a Block
  *     tags: [Blocks]
@@ -638,7 +638,7 @@
 
 /**
  * @swagger
- * /api/community-units/blocks/{id}:
+ * /community-units/blocks/{id}:
  *   delete:
  *     summary: Soft delete a Block
  *     tags: [Blocks]

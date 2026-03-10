@@ -103,7 +103,11 @@
         "unit_ids_required": "Yoo xiqqaate eenyummeessaan yuunitii tokko ni barbaadama",
         "unit_ids_must_be_array": "Eenyummeessaan yuunitii tarree (array) ta'uu qabu",
         "invalid_unit_for_pc_worker": "Sadarkaan yuunitii ramaddii Leenjisaa Maatiif dogoggoraadha. Bilookii ta'uu qaba.",
-        "unit_outside_jurisdiction": "Yuunitiiwwan filataman keessaa tokko ykn isaa ol aangoo buufata fayyaa keessanii ala."
+        "unit_outside_jurisdiction": "Yuunitiiwwan filataman keessaa tokko ykn isaa ol aangoo buufata fayyaa keessanii ala.",
+        "phone_number_exists": "Maatiin lakkoofsa bilbilaa kanaan galmaa'e duraan jira.",
+        "pc_worker_unauthorized_block": "Bilookii kana keessatti maatii galmeessuuf hayyama hin qabdu.",
+        "delete_family_unauthorized": "Galmee maatii kana haquuf hayyama hin qabdu.",
+        "delete_family_error": "Galmee maatii haquun hin danda'amne."
     },
     "success": {
         "user_registered": "Fayyadamaan milkaa'inaan galmaa'era.",
@@ -143,6 +147,11 @@
         "block_deleted": "Bilookiin milkiin haqameera",
         "family_created": "Maatiin milkaa'inaan uumameera",
         "family_updated": "Maatiin milkaa'inaan haaromfameera",
+        "family_deleted": "Galmeen maatii milkaa'inaan haqameera.",
+        "family_fetched": "Maatiin milkaa'inaan argameera",
+        "families_fetched_by_user": "Maatiin fayyadamaan galmaa'an milkaa'inaan argamaniiru",
+        "families_filtered": "Maatiin sadarkaa bulchiinsaan calalaman milkaa'inaan argamaniiru",
+        "assigned_families_fetched": "Maatiin ramadaman milkaa'inaan argamaniiru",
         "pc_worker_assigned": "Leenjisaan Maatii milkaa'inaan yuunitichaaf ramadameera."
     }
 }

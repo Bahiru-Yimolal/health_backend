@@ -98,7 +98,11 @@
         "unit_ids_required": "At least one Unit ID is required",
         "unit_ids_must_be_array": "Unit IDs must be provided as an array",
         "invalid_unit_for_pc_worker": "Invalid unit level for PC Worker assignment. Must be Block.",
-        "unit_outside_jurisdiction": "One or more selected units are outside of your health center's jurisdiction."
+        "unit_outside_jurisdiction": "One or more selected units are outside of your health center's jurisdiction.",
+        "phone_number_exists": "Family with this phone number already exists.",
+        "pc_worker_unauthorized_block": "You are not authorized to register families in this block.",
+        "delete_family_unauthorized": "You are not authorized to delete this family record.",
+        "delete_family_error": "Database error: Unable to delete family record."
     },
     "success": {
         "user_registered": "User registered successfully.",
@@ -138,6 +142,11 @@
         "block_deleted": "Block deleted successfully",
         "family_created": "Family created successfully",
         "family_updated": "Family updated successfully",
+        "family_deleted": "Family record deleted successfully.",
+        "family_fetched": "Family record fetched successfully",
+        "families_fetched_by_user": "Families registered by the user fetched successfully",
+        "families_filtered": "Families filtered by administrative unit successfully",
+        "assigned_families_fetched": "Assigned families fetched successfully",
         "pc_worker_assigned": "PC Worker successfully assigned to the logical unit."
     }
 }

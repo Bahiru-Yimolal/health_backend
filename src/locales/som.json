@@ -104,7 +104,11 @@
         "unit_ids_required": "Ugu yaraan hal Aqoonsi Cutub ah ayaa loo baahan yahay",
         "unit_ids_must_be_array": "Aqoonsiyada Cutubka waa in loo bixiyaa sidii qabanqaabo (array)",
         "invalid_unit_for_pc_worker": "Heerka cutubka ee loo qoondeeyay PC Worker waa khalad. Waa inuu noqdaa Block.",
-        "unit_outside_jurisdiction": "Mid ama ka badan oo ka mid ah qaybaha la doortay waxay ka baxsan yihiin xukunka xaruntaada caafimaadka."
+        "unit_outside_jurisdiction": "Mid ama ka badan oo ka mid ah qaybaha la doortay waxay ka baxsan yihiin xukunka xaruntaada caafimaadka.",
+        "phone_number_exists": "Qoys haysata lambarka taleefankan mar hore ayaa jira.",
+        "pc_worker_unauthorized_block": "Uma ogolaid inaad qoysas ka diiwaangeliso block-gan.",
+        "delete_family_unauthorized": "Uma ogolaid inaad tirtirto xogtan qoyska.",
+        "delete_family_error": "Xogta qoyska waa la tirtiri waayay."
     },
     "success": {
         "user_registered": "Isticmaalaha si guul leh ayaa loo diiwaan geliyay.",
@@ -144,6 +148,11 @@
         "block_deleted": "Block si guul leh ayaa loo tirtiray",
         "family_created": "Qoyska si guul leh ayaa loo abuuray",
         "family_updated": "Qoyska si guul leh ayaa loo cusbooneysiiyay",
+        "family_deleted": "Xogta qoyska si guul leh ayaa loo tirtiray.",
+        "family_fetched": "Xogta qoyska si guul leh ayaa loo helay",
+        "families_fetched_by_user": "Qoysaska uu isticmaalahu diwaangeliyay si guul leh ayaa loo helay",
+        "families_filtered": "Qoysaska lagu sifeeyay unugga maamulka ayaa si guul leh loo helay",
+        "assigned_families_fetched": "Qoysaska loo qoondeeyay si guul leh ayaa loo helay",
         "pc_worker_assigned": "PC Worker si guul leh ayaa loogu qoondeeyay cutubka mandaqada."
     }
 }
