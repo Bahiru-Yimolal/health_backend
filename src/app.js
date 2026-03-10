@@ -5,6 +5,9 @@ const healthCenterRoutes = require("./routes/healthCenterRoutes");
 const cityRoutes = require("./routes/cityRoutes");
 const communityUnitRoutes = require("./routes/communityUnitRoutes");
 const familyRoutes = require("./routes/familyRoutes");
+const visitRoutes = require("./routes/visitRoutes");
+const referralRoutes = require("./routes/referralRoutes");
+const reportRoutes = require("./routes/reportRoutes");
 const { errorMiddleware } = require("./middlewares/errorMiddleware");
 const cors = require("cors");
 const { swaggerUi, swaggerSpec } = require("./config/swagger");
@@ -29,6 +32,9 @@ app.use("/api/subcities", subcityRoutes);
 app.use("/api/health-centers", healthCenterRoutes);
 app.use("/api/community-units", communityUnitRoutes);
 app.use("/api/families", familyRoutes);
+app.use("/api/visits", visitRoutes);
+app.use("/api/referrals", referralRoutes);
+app.use("/api/reports", reportRoutes);
 
 app.use(errorMiddleware);
 

@@ -107,8 +107,11 @@
         "unit_outside_jurisdiction": "አንድ ወይም ከዚያ በላይ የተመረጡ ዩኒቶች ከእርስዎ የጤና ጣቢያ ስልጣን ውጭ ናቸው።",
         "phone_number_exists": "ከዚህ ስልክ ቁጥር ጋር የተመዘገበ ቤተሰብ ቀድሞውኑ አለ።",
         "pc_worker_unauthorized_block": "በዚህ ብሎክ ውስጥ ቤተሰብ ለመመዝገብ ፈቃድ የለዎትም።",
+        "pc_worker_unauthorized_visit": "በዚህ ብሎክ ውስጥ የቤት ጉብኝት ለማድረግ ፈቃድ የለዎትም።",
         "delete_family_unauthorized": "ይህንን የቤተሰብ መዝገብ ለመሰረዝ ፈቃድ የለዎትም።",
-        "delete_family_error": "የቤተሰብ መዝገብ መሰረዝ አልተቻለም።"
+        "delete_family_error": "የቤተሰብ መዝገብ መሰረዝ አልተቻለም።",
+        "create_visit_error": "የቤት ጉብኝት መጀመር አልተቻለም።",
+        "visit_not_found": "የቤት ጉብኝት አልተገኘም።"
     },
     "success": {
         "user_registered": "ተጠቃሚው በተሳካ ሁኔታ ተመዝግቧል።",
@@ -153,6 +156,11 @@
         "families_fetched_by_user": "በተጠቃሚው የተመዘገቡ ቤተሰቦች በተሳካ ሁኔታ ተገኝተዋል",
         "families_filtered": "በአስተዳደራዊ እርከን የተጣሩ ቤተሰቦች በተሳካ ሁኔታ ተገኝተዋል",
         "assigned_families_fetched": "የተመደቡ ቤተሰቦች በተሳካ ሁኔታ ተገኝተዋል",
-        "pc_worker_assigned": "የወላጅ አሰልጣኝ በዩኒቱ ውስጥ በተሳካ ሁኔታ ተመድቧል"
+        "pc_worker_assigned": "የወላጅ አሰልጣኝ በዩኒቱ ውስጥ በተሳካ ሁኔታ ተመድቧል",
+        "pc_worker_assignment_updated": "የፒሲ ሰራተኛ ብሎክ ምደባ በተሳካ ሁኔታ ተሻሽሏል",
+        "visit_started": "የቤት ጉብኝት በተሳካ ሁኔታ ተጀምሯል።",
+        "visit_updated": "የቤት ጉብኝት በተሳካ ሁኔታ ተሻሽሏል",
+        "visit_details_fetched": "የቤት ጉብኝት ዝርዝሮች በተሳካ ሁኔታ ተገኝተዋል",
+        "visit_history_fetched": "የቤት ጉብኝት ታሪክ በተሳካ ሁኔታ ተገኝቷል"
     }
 }

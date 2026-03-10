@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-// Placeholder for woreda routes
+// Placeholder for report routes
 // router.get("/", ...);
 
 module.exports = router;

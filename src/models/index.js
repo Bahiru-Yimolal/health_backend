@@ -10,6 +10,11 @@ const Family = require("./familyModel");
 const PregnantMother = require("./pregnantMotherModel");
 const LactatingMother = require("./lactatingMotherModel");
 const Child = require("./childModel");
+const HouseholdVisit = require("./householdVisit");
+const PregnantAssessment = require("./pregnantAssessment");
+const PostnatalAssessment = require("./postnatalAssessment");
+const ChildAssessment = require("./childAssessment");
+const Referral = require("./referral");
 
 // User -> UserAssignment
 User.hasMany(UserAssignment, { foreignKey: "user_id" });
@@ -78,6 +83,46 @@ LactatingMother.belongsTo(Family, { foreignKey: "family_id" });
 Family.hasMany(Child, { foreignKey: "family_id", onDelete: "CASCADE" });
 Child.belongsTo(Family, { foreignKey: "family_id" });
 
+// --- VISIT & ASSESSMENT ASSOCIATIONS ---
+
+// HouseholdVisit -> User (Visitor)
+User.hasMany(HouseholdVisit, { foreignKey: "visitor_id" });
+HouseholdVisit.belongsTo(User, { foreignKey: "visitor_id", as: "Visitor" });
+
+// HouseholdVisit -> Family
+Family.hasMany(HouseholdVisit, { foreignKey: "family_id" });
+HouseholdVisit.belongsTo(Family, { foreignKey: "family_id", as: "Family" });
+
+// HouseholdVisit -> Assessments (1-to-1 per visit type)
+HouseholdVisit.hasOne(PregnantAssessment, { foreignKey: "visit_id", onDelete: "CASCADE" });
+PregnantAssessment.belongsTo(HouseholdVisit, { foreignKey: "visit_id" });
+
+HouseholdVisit.hasOne(PostnatalAssessment, { foreignKey: "visit_id", onDelete: "CASCADE" });
+PostnatalAssessment.belongsTo(HouseholdVisit, { foreignKey: "visit_id" });
+
+HouseholdVisit.hasOne(ChildAssessment, { foreignKey: "visit_id", onDelete: "CASCADE" });
+ChildAssessment.belongsTo(HouseholdVisit, { foreignKey: "visit_id" });
+
+// Assessments -> Dependent Models
+PregnantAssessment.belongsTo(PregnantMother, { foreignKey: "mother_id" });
+PregnantMother.hasMany(PregnantAssessment, { foreignKey: "mother_id" });
+
+PostnatalAssessment.belongsTo(LactatingMother, { foreignKey: "mother_id" });
+LactatingMother.hasMany(PostnatalAssessment, { foreignKey: "mother_id" });
+
+ChildAssessment.belongsTo(Child, { foreignKey: "child_id" });
+Child.hasMany(ChildAssessment, { foreignKey: "child_id" });
+
+// --- REFERRAL ASSOCIATIONS ---
+
+HouseholdVisit.hasMany(Referral, { foreignKey: "visit_id" });
+Referral.belongsTo(HouseholdVisit, { foreignKey: "visit_id" });
+
+User.hasMany(Referral, { foreignKey: "pc_worker_id" });
+Referral.belongsTo(User, { foreignKey: "pc_worker_id", as: "PCWorker" });
+
+Referral.belongsTo(User, { foreignKey: "feedback_by", as: "FeedbackProvider" });
+
 module.exports = {
   User,
   AdministrativeUnit,
@@ -91,6 +136,11 @@ module.exports = {
   PregnantMother,
   LactatingMother,
   Child,
+  HouseholdVisit,
+  PregnantAssessment,
+  PostnatalAssessment,
+  ChildAssessment,
+  Referral,
 };
 
 

@@ -24,6 +24,7 @@ const {
   createOwnHealthCenterUserController,
   updateOwnHealthCenterUserController,
   assignPCWorkerController,
+  updatePCWorkerAssignmentController,
 } = require("../controllers/healthCenterControllers");
 
 const router = express.Router();
@@ -135,5 +136,16 @@ router.post(
   validateAssignPCWorkerInput,
   assignPCWorkerController
 );
+
+router.patch(
+  "/assign/pc-worker",
+  protect,
+  assignmentMiddleware,
+  levelGuard(["HEALTH_CENTER"]),
+  permissionMiddleware("ASSIGN_PC_WORKERS"),
+  validateAssignPCWorkerInput,
+  updatePCWorkerAssignmentController
+);
+
 
 module.exports = router;

@@ -74,6 +74,10 @@ const Family = sequelize.define(
             type: DataTypes.FLOAT,
             allowNull: true,
         },
+        course_completed: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false,
+        },
         created_by: {
             type: DataTypes.UUID,
             allowNull: false,

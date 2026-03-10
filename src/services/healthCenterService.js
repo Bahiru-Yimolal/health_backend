@@ -389,7 +389,7 @@ const updateOwnHealthCenterUserService = async ({
   }
 };
 
-// 10. Assign PC Worker (Parental Coach) to Woreda, Ketena, or Block
+// 10. Assign PC Worker (Parental Coach) to Block
 const assignPCWorkerService = async ({
   userId,
   unitIds, // Expected to be an array
@@ -440,6 +440,72 @@ const assignPCWorkerService = async ({
   return results;
 };
 
+// 11. Update PC Worker (Parental Coach) Block Assignments
+const updatePCWorkerAssignmentService = async ({
+  userId,
+  unitIds, // Expected to be an array of Block IDs
+  roleName = "PC_WORKER",
+  permissions = null,
+  actor,
+}) => {
+  // Ensure actor is a HEALTH_CENTER Admin
+  if (actor.unit.level !== "HEALTH_CENTER") {
+    throw new AppError("errors.only_health_center_admin_can_manage_own_users", 403);
+  }
+
+  const results = [];
+
+  // Start Transaction for clean update
+  const t = await sequelize.transaction();
+
+  try {
+    // 1. Identify all blocks under this Health Center
+    const healthCenter = actor.unit;
+    const subCities = await AdministrativeUnit.findAll({ where: { parent_id: healthCenter.id } });
+    const subCityIds = subCities.map(sc => sc.id);
+    const woredas = await AdministrativeUnit.findAll({ where: { parent_id: subCityIds } });
+    const woredaIds = woredas.map(w => w.id);
+    const blocks = await AdministrativeUnit.findAll({ where: { parent_id: woredaIds } });
+    const validBlockIdsForHC = blocks.map(b => b.id);
+
+    // 2. Remove existing PC_WORKER assignments for this user within these blocks
+    const role = await Role.findOne({ where: { name: roleName } });
+    if (!role) {
+      throw new AppError("errors.role_not_found", 404);
+    }
+
+    await UserAssignment.destroy({
+      where: {
+        user_id: userId,
+        role_id: role.id,
+        unit_id: validBlockIdsForHC
+      },
+      transaction: t
+    });
+
+    // 3. Add new assignments
+    for (const unitId of unitIds) {
+      if (!validBlockIdsForHC.includes(unitId)) {
+        throw new AppError("errors.unit_outside_jurisdiction", 403);
+      }
+
+      const assignment = await UserAssignment.create({
+        user_id: userId,
+        unit_id: unitId,
+        role_id: role.id,
+      }, { transaction: t });
+
+      results.push(assignment);
+    }
+
+    await t.commit();
+    return results;
+  } catch (error) {
+    await t.rollback();
+    throw error;
+  }
+};
+
 
 module.exports = {
   createHealthCenterService,
@@ -452,4 +518,5 @@ module.exports = {
   createOwnHealthCenterUserService,
   updateOwnHealthCenterUserService,
   assignPCWorkerService,
+  updatePCWorkerAssignmentService,
 };

@@ -107,8 +107,11 @@
         "unit_outside_jurisdiction": "Dooramino unit-da giddo mitte woyte roore fayyaa xibbakki jurisdictionni goffichoho.",
         "phone_number_exists": "Tenne silkete kiyironni galmeessinoonni maatii hara're no.",
         "pc_worker_unauthorized_block": "Tenne blocke giddo maatii galmeessate eebbimma di herre'anno.",
+        "pc_worker_unauthorized_visit": "Tenne blocke giddo maatii daawwate eebbimma di herre'anno.",
         "delete_family_unauthorized": "Tenne maatete galme hunate eebbimma di herre'anno.",
-        "delete_family_error": "Maatete galme huna di dandiinoonni."
+        "delete_family_error": "Maatete galme huna di dandiinoonni.",
+        "create_visit_error": "Mine daawwannano hanafate di dandiinoonni.",
+        "visit_not_found": "Mine daawwannano diafinoonni."
     },
     "success": {
         "user_registered": "Fayyaanchi lowo geeshsha galmeessinoonni.",
@@ -153,6 +156,11 @@
         "families_fetched_by_user": "Fayyaanchi galmeessino maatii lowo geeshsha afinoonni",
         "families_filtered": "Bulchiinsu handaarinni calalantino maatii gumaabbite afinoonni",
         "assigned_families_fetched": "Ramadantino maatii gumaabbite afinoonni",
-        "pc_worker_assigned": "PC Worker danchummatenni unitra ramanninoonni."
+        "pc_worker_assigned": "PC Worker danchummatenni unitra ramanninoonni.",
+        "pc_worker_assignment_updated": "PC loosu blocke doodonna eebbimmahunni haranfoonni.",
+        "visit_started": "Mine daawwannano danchu garinni jabbantino.",
+        "visit_updated": "Mine daawwannano danchu garinni haranfontino.",
+        "visit_details_fetched": "Mine daawwannano gumaabbe eebbimmahunni afinoonni.",
+        "visit_history_fetched": "Mine daawwannano taariike eebbimmahunni afinoonni."
     }
 }

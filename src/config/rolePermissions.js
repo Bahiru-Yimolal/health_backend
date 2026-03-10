@@ -15,6 +15,7 @@ const Permissions = {
     ASSIGN_PC_WORKERS: "ASSIGN_PC_WORKERS",
     // Add specific overrides like EXPORT_REPORTS here when needed
     EXPORT_REPORTS: "EXPORT_REPORTS",
+    MANAGE_VISITS: "MANAGE_VISITS",
 };
 
 const DefaultRolePermissions = {
@@ -29,9 +30,11 @@ const DefaultRolePermissions = {
         Permissions.ASSIGN_PC_WORKERS,
         Permissions.MANAGE_FAMILIES,
         Permissions.MANAGE_COMMUNITY_UNITS,
+        Permissions.MANAGE_VISITS,
     ],
     [Roles.PC_WORKER]: [
         Permissions.MANAGE_FAMILIES,
+        Permissions.MANAGE_VISITS,
     ],
 };
 

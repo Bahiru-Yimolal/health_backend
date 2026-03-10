@@ -106,8 +106,11 @@
         "unit_outside_jurisdiction": "Yuunitiiwwan filataman keessaa tokko ykn isaa ol aangoo buufata fayyaa keessanii ala.",
         "phone_number_exists": "Maatiin lakkoofsa bilbilaa kanaan galmaa'e duraan jira.",
         "pc_worker_unauthorized_block": "Bilookii kana keessatti maatii galmeessuuf hayyama hin qabdu.",
+        "pc_worker_unauthorized_visit": "Bilookii kana keessatti maatii daawwachuuf hayyama hin qabdu.",
         "delete_family_unauthorized": "Galmee maatii kana haquuf hayyama hin qabdu.",
-        "delete_family_error": "Galmee maatii haquun hin danda'amne."
+        "delete_family_error": "Galmee maatii haquun hin danda'amne.",
+        "create_visit_error": "Kunuunsa/Daawwannaan maatii eegaluun hin danda'amne.",
+        "visit_not_found": "Kunuunsi/Daawwannaan maatii hin argamne."
     },
     "success": {
         "user_registered": "Fayyadamaan milkaa'inaan galmaa'era.",
@@ -152,6 +155,11 @@
         "families_fetched_by_user": "Maatiin fayyadamaan galmaa'an milkaa'inaan argamaniiru",
         "families_filtered": "Maatiin sadarkaa bulchiinsaan calalaman milkaa'inaan argamaniiru",
         "assigned_families_fetched": "Maatiin ramadaman milkaa'inaan argamaniiru",
-        "pc_worker_assigned": "Leenjisaan Maatii milkaa'inaan yuunitichaaf ramadameera."
+        "pc_worker_assigned": "Leenjisaan Maatii milkaa'inaan yuunitichaaf ramadameera.",
+        "pc_worker_assignment_updated": "Ramaddiin bilookii hojjetaa PC milkaa'inaan haromfameera.",
+        "visit_started": "Kunuunsi/Daawwannaan maatii milkaa'inaan eegalameera.",
+        "visit_updated": "Kunuunsi/Daawwannaan maatii milkaa'inaan haromfameera.",
+        "visit_details_fetched": "Bal'inni kuununsicha/daawwannaa maatii milkaa'inaan argameera.",
+        "visit_history_fetched": "Seenaan kuununsicha/daawwannaa maatii milkaa'inaan argameera."
     }
 }

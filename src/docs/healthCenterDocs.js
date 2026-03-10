@@ -428,4 +428,48 @@
  *         description: Forbidden (Jurisdiction violation or mission level)
  *       404:
  *         description: User or unit not found
+ *   patch:
+ *     summary: Update a PC Worker's Block Assignments (HealthCenter Admin only)
+ *     description: Replaces old block assignments with a new set of blocks. Old assignments within the Health Center's jurisdiction are removed before adding the new ones.
+ *     tags: [HealthCenter Admin]
+ *     parameters:
+ *       - $ref: '#/components/parameters/acceptLanguageHeader'
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - unitIds
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 format: uuid
+ *                 description: ID of the user whose assignments represent the new state
+ *               unitIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: uuid
+ *                 description: New array of Block IDs (Administrative Unit level must be BLOCK)
+ *               role:
+ *                 type: string
+ *                 default: "PC_WORKER"
+ *               permissions:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       200:
+ *         description: PC Worker assignments updated successfully
+ *       400:
+ *         description: Invalid input or invalid unit level
+ *       403:
+ *         description: Forbidden (Jurisdiction violation)
+ *       404:
+ *         description: User or unit not found
  */

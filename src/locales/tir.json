@@ -107,8 +107,11 @@
         "unit_outside_jurisdiction": "ሓደ ወይ ካብኡ ንላዕሊ ዝተመርጹ ዩኒታት ካብ ስልጣን ጥዕና ጣብያኹም ወጻኢ እዮም።",
         "phone_number_exists": "በዚ ቑፅሪ ቴሌፎን ዝተመዝገበ ስድራቤት ድሮ ኣሎ።",
         "pc_worker_unauthorized_block": "ኣብዚ ብሎክ እዚ ስድራቤት ንምምዝጋብ ፍቓድ የብልኩምን።",
+        "pc_worker_unauthorized_visit": "ኣብዚ ብሎክ እዚ ናይ ገዛ ዑደት ንምግባር ፍቓድ የብልኩምን።",
         "delete_family_unauthorized": "ነዚ ስድራቤት መዝገብ ንምስራዝ ፍቓድ የብልኩምን።",
-        "delete_family_error": "መዝገብ ስድራቤት ምስራዝ ኣይተኻእለን።"
+        "delete_family_error": "መዝገብ ስድራቤት ምስራዝ ኣይተኻእለን።",
+        "create_visit_error": "ዑደት ገዛ ክጅመር ኣይከኣለን።",
+        "visit_not_found": "ዑደት ገዛ ኣይተረኸበን።"
     },
     "success": {
         "user_registered": "ተጠቃሚ ብዝግባእ ተመዝጊቡ ኣሎ።",
@@ -153,6 +156,11 @@
         "families_fetched_by_user": "በተጠቃሚ ዝተመዝገቡ ስድራቤታት ብዝግባእ ተረኺቦም ኣለዉ",
         "families_filtered": "ብመሰረት ምምሕዳራዊ ገደብ ዝተጻረዩ ስድራቤታት ብዝግባእ ተረኺቦም ኣለዉ",
         "assigned_families_fetched": "ዝተመደቡ ስድራቤታት ብዝግባእ ተረኺቦም ኣለዉ",
-        "pc_worker_assigned": "PC Worker ኣብቲ ዩኒት ብዝግባእ ተመዲቡ ኣሎ።"
+        "pc_worker_assigned": "PC Worker ኣብቲ ዩኒት ብዝግባእ ተመዲቡ ኣሎ።",
+        "pc_worker_assignment_updated": "ምደባ ብሎክ ሰራተኛ ፒሲ ብዓወት ተመሓይሹ ኣሎ።",
+        "visit_started": "ዑደት ገዛ ብዓወት ተጀሚሩ ኣሎ።",
+        "visit_updated": "ዑደት ገዛ ብዓወት ተመሓይሹ ኣሎ።",
+        "visit_details_fetched": "ዝርዝር ዑደት ገዛ ብዓወት ተረኺቡ ኣሎ።",
+        "visit_history_fetched": "ታሪክ ዑደት ገዛ ብዓወት ተረኺቡ ኣሎ።"
     }
 }
