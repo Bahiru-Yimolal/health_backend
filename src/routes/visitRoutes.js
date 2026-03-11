@@ -14,7 +14,6 @@ const {
     updateVisitController,
     getVisitDetailsController,
     getFamilyVisitHistoryController,
-    
 } = require("../controllers/visitController");
 
 const router = express.Router();

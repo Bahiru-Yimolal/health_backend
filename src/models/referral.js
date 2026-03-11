@@ -25,6 +25,11 @@ const Referral = sequelize.define(
             type: DataTypes.ENUM("CHILD", "PREGNANT_MOTHER", "LACTATING_MOTHER"),
             allowNull: false,
         },
+        assessment_id: {
+            type: DataTypes.UUID,
+            allowNull: true,
+            comment: "Links to the specific assessment (Pregnant, Postnatal, or Child) that triggered this referral"
+        },
         pc_worker_id: {
             type: DataTypes.UUID,
             allowNull: false,

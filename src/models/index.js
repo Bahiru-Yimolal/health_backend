@@ -123,6 +123,16 @@ Referral.belongsTo(User, { foreignKey: "pc_worker_id", as: "PCWorker" });
 
 Referral.belongsTo(User, { foreignKey: "feedback_by", as: "FeedbackProvider" });
 
+// Assessments -> Referrals (One-to-One: an assessment can trigger one referral)
+PregnantAssessment.hasOne(Referral, { foreignKey: "assessment_id", constraints: false });
+Referral.belongsTo(PregnantAssessment, { foreignKey: "assessment_id", constraints: false });
+
+PostnatalAssessment.hasOne(Referral, { foreignKey: "assessment_id", constraints: false });
+Referral.belongsTo(PostnatalAssessment, { foreignKey: "assessment_id", constraints: false });
+
+ChildAssessment.hasOne(Referral, { foreignKey: "assessment_id", constraints: false });
+Referral.belongsTo(ChildAssessment, { foreignKey: "assessment_id", constraints: false });
+
 module.exports = {
   User,
   AdministrativeUnit,

@@ -105,7 +105,14 @@
         "delete_family_unauthorized": "You are not authorized to delete this family record.",
         "delete_family_error": "Database error: Unable to delete family record.",
         "create_visit_error": "Unable to start household visit.",
-        "visit_not_found": "Household visit not found."
+        "visit_not_found": "Household visit not found.",
+        "pregnant_mother_not_found": "Pregnant mother not found.",
+        "lactating_mother_not_found": "Lactating mother not found.",
+        "child_not_found": "Child not found.",
+        "child_assessment_not_found": "Child assessment not found.",
+        "pregnant_assessment_not_found": "Pregnant assessment not found.",
+        "postnatal_assessment_not_found": "Postnatal assessment not found.",
+        "referral_already_processed": "Cannot cancel referral; it has already been processed by the health facility."
     },
     "success": {
         "user_registered": "User registered successfully.",
@@ -155,6 +162,15 @@
         "visit_started": "Household visit started successfully.",
         "visit_updated": "Household visit updated successfully.",
         "visit_details_fetched": "Household visit details fetched successfully.",
-        "visit_history_fetched": "Household visit history fetched successfully."
+        "visit_history_fetched": "Household visit history fetched successfully.",
+        "pregnant_assessment_created": "Pregnant assessment recorded successfully.",
+        "pregnant_assessment_updated": "Pregnant assessment updated successfully.",
+        "pregnant_assessment_deleted": "Pregnant assessment record deleted successfully.",
+        "postnatal_assessment_created": "Postnatal assessment recorded successfully.",
+        "postnatal_assessment_updated": "Postnatal assessment updated successfully.",
+        "postnatal_assessment_deleted": "Postnatal assessment record deleted successfully.",
+        "child_assessment_created": "Child assessment recorded successfully.",
+        "child_assessment_updated": "Child assessment updated successfully.",
+        "child_assessment_deleted": "Child assessment record deleted successfully."
     }
 }

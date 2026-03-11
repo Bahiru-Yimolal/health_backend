@@ -110,8 +110,15 @@
         "pc_worker_unauthorized_visit": "ኣብዚ ብሎክ እዚ ናይ ገዛ ዑደት ንምግባር ፍቓድ የብልኩምን።",
         "delete_family_unauthorized": "ነዚ ስድራቤት መዝገብ ንምስራዝ ፍቓድ የብልኩምን።",
         "delete_family_error": "መዝገብ ስድራቤት ምስራዝ ኣይተኻእለን።",
-        "create_visit_error": "ዑደት ገዛ ክጅመር ኣይከኣለን።",
-        "visit_not_found": "ዑደት ገዛ ኣይተረኸበን።"
+        "create_visit_error": "Unable to start household visit.",
+        "visit_not_found": "Household visit not found.",
+        "pregnant_mother_not_found": "Pregnant mother not found.",
+        "lactating_mother_not_found": "Lactating mother not found.",
+        "child_not_found": "ህፃን ኣይተረኽበን::",
+        "child_assessment_not_found": "መርመራ ህፃን ኣይተረኽበን::",
+        "pregnant_assessment_not_found": "መርመራ ጥንስቲ ኣደ ኣይተረኽበን::",
+        "postnatal_assessment_not_found": "መርመራ ኣጥባዪት ኣደ ኣይተረኽበን::",
+        "referral_already_processed": "ነቲ ሪፈራል ክስረዝ ኣይከኣልን፤ ብትካል ጥዕና ድሮ ተሰሪሑሉ እዩ::"
     },
     "success": {
         "user_registered": "ተጠቃሚ ብዝግባእ ተመዝጊቡ ኣሎ።",
@@ -160,7 +167,16 @@
         "pc_worker_assignment_updated": "ምደባ ብሎክ ሰራተኛ ፒሲ ብዓወት ተመሓይሹ ኣሎ።",
         "visit_started": "ዑደት ገዛ ብዓወት ተጀሚሩ ኣሎ።",
         "visit_updated": "ዑደት ገዛ ብዓወት ተመሓይሹ ኣሎ።",
-        "visit_details_fetched": "ዝርዝር ዑደት ገዛ ብዓወት ተረኺቡ ኣሎ።",
-        "visit_history_fetched": "ታሪክ ዑደት ገዛ ብዓወት ተረኺቡ ኣሎ።"
+        "visit_details_fetched": "Household visit details fetched successfully.",
+        "visit_history_fetched": "Household visit history fetched successfully.",
+        "pregnant_assessment_created": "መርመራ ጥንስቲ ኣደ ብዓወት ተመዝጊቡ ኣሎ::",
+        "pregnant_assessment_updated": "ምርመራ ነብሰ-ጡር ሰበይቲ ብዓወት ተመሓይሹ ኣሎ።",
+        "pregnant_assessment_deleted": "መርመራ ጥንስቲ ኣደ ብዓወት ተሰሪዙ ኣሎ::",
+        "postnatal_assessment_created": "Postnatal assessment recorded successfully.",
+        "postnatal_assessment_updated": "መርመራ ኣጥባዪት ኣደ ብዓወት ተመሓይሹ ኣሎ::",
+        "postnatal_assessment_deleted": "መርመራ ኣጥባዪት ኣደ ብዓወት ተሰሪዙ ኣሎ::",
+        "child_assessment_created": "መርመራ ህፃን ብዓወት ተመዝጊቡ ኣሎ::",
+        "child_assessment_updated": "መርመራ ህፃን ብዓወት ተመሓይሹ ኣሎ::",
+        "child_assessment_deleted": "መዝገብ መርመራ ህፃን ብዓወት ተሰሪዙ ኣሎ::"
     }
 }

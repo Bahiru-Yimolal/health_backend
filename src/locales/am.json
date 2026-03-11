@@ -111,7 +111,14 @@
         "delete_family_unauthorized": "ይህንን የቤተሰብ መዝገብ ለመሰረዝ ፈቃድ የለዎትም።",
         "delete_family_error": "የቤተሰብ መዝገብ መሰረዝ አልተቻለም።",
         "create_visit_error": "የቤት ጉብኝት መጀመር አልተቻለም።",
-        "visit_not_found": "የቤት ጉብኝት አልተገኘም።"
+        "visit_not_found": "የቤት ጉብኝት አልተገኘም።",
+        "pregnant_mother_not_found": "ነፍሰ ጡር እናት አልተገኘችም።",
+        "lactating_mother_not_found": "የሚያጠባ እናት አልተገኘችም።",
+        "child_not_found": "ህፃን አልተገኘም::",
+        "child_assessment_not_found": "የህፃን ምርመራ አልተገኘም::",
+        "pregnant_assessment_not_found": "የነፍሰ ጡር እናት ምርመራ አልተገኘም::",
+        "postnatal_assessment_not_found": "የሚያጠባ እናት ምርመራ አልተገኘም::",
+        "referral_already_processed": "ሪፈራሉን መሰረዝ አይቻልም፤ በጤና ተቋሙ ቀድሞውኑ ተከናውኗል::"
     },
     "success": {
         "user_registered": "ተጠቃሚው በተሳካ ሁኔታ ተመዝግቧል።",
@@ -161,6 +168,15 @@
         "visit_started": "የቤት ጉብኝት በተሳካ ሁኔታ ተጀምሯል።",
         "visit_updated": "የቤት ጉብኝት በተሳካ ሁኔታ ተሻሽሏል",
         "visit_details_fetched": "የቤት ጉብኝት ዝርዝሮች በተሳካ ሁኔታ ተገኝተዋል",
-        "visit_history_fetched": "የቤት ጉብኝት ታሪክ በተሳካ ሁኔታ ተገኝቷል"
+        "visit_history_fetched": "የቤት ጉብኝት ታሪክ በተሳካ ሁኔታ ተገኝቷል",
+        "pregnant_assessment_created": "የነፍሰ ጡር እናት ምዘና በተሳካ ሁኔታ ተመዝግቧል።",
+        "pregnant_assessment_updated": "የነፍሰ ጡር እናት ምዘና በተሳካ ሁኔታ ተሻሽሏል።",
+        "pregnant_assessment_deleted": "የነፍሰ ጡር እናት ምዘና መረጃ በተሳካ ሁኔታ ተሰርዟል::",
+        "postnatal_assessment_created": "የሚያጠባ እናት ምዘና በተሳካ ሁኔታ ተመዝግቧል።",
+        "postnatal_assessment_updated": "የሚያጠባ እናት ምዘና በተሳካ ሁኔታ ተሻሽሏል።",
+        "postnatal_assessment_deleted": "የሚያጠባ እናት ምዘና መረጃ በተሳካ ሁኔታ ተሰርዟል::",
+        "child_assessment_created": "የህፃን ምዘና በተሳካ ሁኔታ ተመዝግቧል።",
+        "child_assessment_updated": "የህፃን ምዘና በተሳካ ሁኔታ ተሻሽሏል።",
+        "child_assessment_deleted": "የህፃን ምዘና መረጃ በተሳካ ሁኔታ ተሰርዟል::"
     }
 }

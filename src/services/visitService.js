@@ -1,9 +1,10 @@
 const HouseholdVisit = require("../models/householdVisit");
 const Family = require("../models/familyModel");
 const UserAssignment = require("../models/userAssignment");
-const PregnantAssessment = require("../models/pregnantAssessment");
 const PostnatalAssessment = require("../models/postnatalAssessment");
 const ChildAssessment = require("../models/childAssessment");
+const Referral = require("../models/referral");
+const sequelize = require("../config/database");
 
 /**
  * Start a new household visit
@@ -59,36 +60,59 @@ const startVisitService = async (visitData) => {
  * @returns {Object} - Updated visit record
  */
 const updateVisitService = async (visitId, updateData, actor) => {
-    const visit = await HouseholdVisit.findByPk(visitId);
+    return await sequelize.transaction(async (t) => {
+        const visit = await HouseholdVisit.findByPk(visitId, { transaction: t });
 
-    if (!visit) {
-        throw new Error("visit_not_found");
-    }
-
-    // Authorization: Only the original visitor or a supervisor can update
-    // For now, focusing on the PC worker who started it
-    if (visit.visitor_id !== actor.user_id) {
-        // Check if supervisor (optional refinement later)
-        // throw new Error("unauthorized_visit_update");
-    }
-
-    // Update allowed fields
-    const allowedFields = [
-        "next_appointment_date",
-        "service_type",
-        "is_eligible_for_support",
-        "is_vulnerable",
-        "course_completed"
-    ];
-
-    allowedFields.forEach(field => {
-        if (updateData[field] !== undefined) {
-            visit[field] = updateData[field];
+        if (!visit) {
+            throw new Error("visit_not_found");
         }
-    });
 
-    await visit.save();
-    return visit;
+        // Authorization: Only the original visitor or a supervisor can update
+        if (visit.visitor_id !== actor.user_id) {
+            // Check if supervisor (optional refinement later)
+        }
+
+        // Update allowed fields and prepare family sync data
+        const allowedFields = [
+            "next_appointment_date",
+            "service_type",
+            "is_eligible_for_support",
+            "is_vulnerable",
+            "course_completed"
+        ];
+
+        const familySyncMapping = {
+            is_eligible_for_support: "is_temporary_direct_support_beneficiary",
+            is_vulnerable: "is_vulnerable",
+            course_completed: "course_completed"
+        };
+
+        const familyUpdateData = {};
+
+        allowedFields.forEach(field => {
+            if (updateData[field] !== undefined) {
+                visit[field] = updateData[field];
+
+                // If it's a shared field, add to family update
+                if (familySyncMapping[field]) {
+                    familyUpdateData[familySyncMapping[field]] = updateData[field];
+                }
+            }
+        });
+
+        // 1. Save Visit
+        await visit.save({ transaction: t });
+
+        // 2. Sync to Family if any mapped fields changed
+        if (Object.keys(familyUpdateData).length > 0) {
+            await Family.update(familyUpdateData, {
+                where: { id: visit.family_id },
+                transaction: t
+            });
+        }
+
+        return visit;
+    });
 };
 
 /**
@@ -99,9 +123,18 @@ const updateVisitService = async (visitId, updateData, actor) => {
 const getVisitDetailsService = async (visitId) => {
     const visit = await HouseholdVisit.findByPk(visitId, {
         include: [
-            { model: PregnantAssessment },
-            { model: PostnatalAssessment },
-            { model: ChildAssessment }
+            {
+                model: PregnantAssessment,
+                include: [{ model: Referral }]
+            },
+            {
+                model: PostnatalAssessment,
+                include: [{ model: Referral }]
+            },
+            {
+                model: ChildAssessment,
+                include: [{ model: Referral }]
+            }
         ]
     });
 
@@ -128,9 +161,18 @@ const getFamilyVisitHistoryService = async (familyId, page = 1, limit = 10) => {
         offset: parseInt(offset),
         order: [["visit_date", "DESC"]],
         include: [
-            { model: PregnantAssessment },
-            { model: PostnatalAssessment },
-            { model: ChildAssessment }
+            {
+                model: PregnantAssessment,
+                include: [{ model: Referral }]
+            },
+            {
+                model: PostnatalAssessment,
+                include: [{ model: Referral }]
+            },
+            {
+                model: ChildAssessment,
+                include: [{ model: Referral }]
+            }
         ]
     });
 
@@ -146,5 +188,5 @@ module.exports = {
     startVisitService,
     updateVisitService,
     getVisitDetailsService,
-    getFamilyVisitHistoryService
+    getFamilyVisitHistoryService,
 };

@@ -109,8 +109,15 @@
         "pc_worker_unauthorized_visit": "Bilookii kana keessatti maatii daawwachuuf hayyama hin qabdu.",
         "delete_family_unauthorized": "Galmee maatii kana haquuf hayyama hin qabdu.",
         "delete_family_error": "Galmee maatii haquun hin danda'amne.",
-        "create_visit_error": "Kunuunsa/Daawwannaan maatii eegaluun hin danda'amne.",
-        "visit_not_found": "Kunuunsi/Daawwannaan maatii hin argamne."
+        "create_visit_error": "Unable to start household visit.",
+        "visit_not_found": "Household visit not found.",
+        "pregnant_mother_not_found": "Pregnant mother not found.",
+        "lactating_mother_not_found": "Lactating mother not found.",
+        "child_not_found": "Muca/maatii hin argamne.",
+        "child_assessment_not_found": "Qorannoon mucaa hin argamne.",
+        "pregnant_assessment_not_found": "Qorannoon haada ulfaa hin argamne.",
+        "postnatal_assessment_not_found": "Postnatal assessment not found.",
+        "referral_already_processed": "Rifeeraala haquun hin danda'amu; duraan bifa kanaan tajaajila fayyaa irratti raawwatameera."
     },
     "success": {
         "user_registered": "Fayyadamaan milkaa'inaan galmaa'era.",
@@ -159,7 +166,16 @@
         "pc_worker_assignment_updated": "Ramaddiin bilookii hojjetaa PC milkaa'inaan haromfameera.",
         "visit_started": "Kunuunsi/Daawwannaan maatii milkaa'inaan eegalameera.",
         "visit_updated": "Kunuunsi/Daawwannaan maatii milkaa'inaan haromfameera.",
-        "visit_details_fetched": "Bal'inni kuununsicha/daawwannaa maatii milkaa'inaan argameera.",
-        "visit_history_fetched": "Seenaan kuununsicha/daawwannaa maatii milkaa'inaan argameera."
+        "visit_details_fetched": "Household visit details fetched successfully.",
+        "visit_history_fetched": "Household visit history fetched successfully.",
+        "pregnant_assessment_created": "Qorannoon haadha ulfaas milkaa'inaan galmaa'eera.",
+        "pregnant_assessment_updated": "Qorannoon haadha ulfaas milkaa'inaan haaromeera.",
+        "pregnant_assessment_deleted": "Galmeen qorannoo haadha ulfaas milkaa'inaan haqameera.",
+        "postnatal_assessment_created": "Postnatal assessment recorded successfully.",
+        "postnatal_assessment_updated": "Postnatal assessment updated successfully.",
+        "postnatal_assessment_deleted": "Postnatal assessment record deleted successfully.",
+        "child_assessment_created": "Qorannoon mucaa galmaa'eera.",
+        "child_assessment_updated": "Qorannoon mucaa haaromfameera.",
+        "child_assessment_deleted": "Qorannaan mucaa haqameera."
     }
 }

@@ -110,8 +110,15 @@
         "pc_worker_unauthorized_visit": "Uma ogolaid inaad qoysas ku booqato block-gan.",
         "delete_family_unauthorized": "Uma ogolaid inaad tirtirto xogtan qoyska.",
         "delete_family_error": "Xogta qoyska waa la tirtiri waayay.",
-        "create_visit_error": "Ma suurtogal ahayn in la bilaabo booqashada guriga.",
-        "visit_not_found": "Booqashada guriga lama helin."
+        "create_visit_error": "Unable to start household visit.",
+        "visit_not_found": "Household visit not found.",
+        "pregnant_mother_not_found": "Pregnant mother not found.",
+        "lactating_mother_not_found": "Lactating mother not found.",
+        "child_not_found": "Cunugga lama helin.",
+        "child_assessment_not_found": "Qiimaynta cunugga lama helin.",
+        "pregnant_assessment_not_found": "Qiimaynta hooyada uurka leh lama helin.",
+        "postnatal_assessment_not_found": "Postnatal assessment not found.",
+        "referral_already_processed": "Lama baajin karo gudbinta; mar hore ayaa ayaa laga shaqeeyay xarunta caafimaadka."
     },
     "success": {
         "user_registered": "Isticmaalaha si guul leh ayaa loo diiwaan geliyay.",
@@ -160,7 +167,16 @@
         "pc_worker_assignment_updated": "Meelaynta block-ga ee shaqaalaha PC si guul leh ayaa loo cusboonaysiiyay.",
         "visit_started": "Booqashada guriga si guul leh ayaa loo bilaabay.",
         "visit_updated": "Booqashada guriga si guul leh ayaa loo cusboonaysiiyay.",
-        "visit_details_fetched": "Faahfaahinta booqashada guriga si guul leh ayaa loo helay.",
-        "visit_history_fetched": "Taariikhda booqashada guriga si guul leh ayaa loo helay."
+        "visit_details_fetched": "Household visit details fetched successfully.",
+        "visit_history_fetched": "Household visit history fetched successfully.",
+        "pregnant_assessment_created": "Qiimaynta haweeneyda uurka leh ayaa si guul ah loo diwaangeliyey.",
+        "pregnant_assessment_updated": "Qiimaynta haweeneyda uurka leh ayaa si guul ah loo cusbooneysiiyay.",
+        "pregnant_assessment_deleted": "Qiimaynta haweeneyda uurka leh ayaa si guul ah loo tirtiray.",
+        "postnatal_assessment_created": "Postnatal assessment recorded successfully.",
+        "postnatal_assessment_updated": "Postnatal assessment updated successfully.",
+        "postnatal_assessment_deleted": "Postnatal assessment record deleted successfully.",
+        "child_assessment_created": "Qiimaynta cunugga si guul leh ayaa loo diwaangeliyey.",
+        "child_assessment_updated": "Qiimaynta cunugga si guul leh ayaa loo cusboonaysiiyey.",
+        "child_assessment_deleted": "Diiwaanka qiimaynta cunugga si guul leh ayaa loo tirtiray."
     }
 }

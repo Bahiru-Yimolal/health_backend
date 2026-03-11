@@ -128,5 +128,5 @@ module.exports = {
     startVisitController,
     updateVisitController,
     getVisitDetailsController,
-    getFamilyVisitHistoryController
+    getFamilyVisitHistoryController,
 };

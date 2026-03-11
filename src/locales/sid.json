@@ -110,8 +110,15 @@
         "pc_worker_unauthorized_visit": "Tenne blocke giddo maatii daawwate eebbimma di herre'anno.",
         "delete_family_unauthorized": "Tenne maatete galme hunate eebbimma di herre'anno.",
         "delete_family_error": "Maatete galme huna di dandiinoonni.",
-        "create_visit_error": "Mine daawwannano hanafate di dandiinoonni.",
-        "visit_not_found": "Mine daawwannano diafinoonni."
+        "create_visit_error": "Unable to start household visit.",
+        "visit_not_found": "Household visit not found.",
+        "pregnant_mother_not_found": "Pregnant mother not found.",
+        "lactating_mother_not_found": "Lactating mother not found.",
+        "child_not_found": "Qaaqqu nabbaba horontanni.",
+        "child_assessment_not_found": "Qaaqqu nabbaba horontanni.",
+        "pregnant_assessment_not_found": "Galaado ayido nabbaba horontanni.",
+        "postnatal_assessment_not_found": "Postnatal assessment not found.",
+        "referral_already_processed": "Rifeeraala huna danda'manni; fayyaa uurrinsha kaima loosidhanni."
     },
     "success": {
         "user_registered": "Fayyaanchi lowo geeshsha galmeessinoonni.",
@@ -160,7 +167,16 @@
         "pc_worker_assignment_updated": "PC loosu blocke doodonna eebbimmahunni haranfoonni.",
         "visit_started": "Mine daawwannano danchu garinni jabbantino.",
         "visit_updated": "Mine daawwannano danchu garinni haranfontino.",
-        "visit_details_fetched": "Mine daawwannano gumaabbe eebbimmahunni afinoonni.",
-        "visit_history_fetched": "Mine daawwannano taariike eebbimmahunni afinoonni."
+        "visit_details_fetched": "Household visit details fetched successfully.",
+        "visit_history_fetched": "Household visit history fetched successfully.",
+        "pregnant_assessment_created": "Galaado ayido nabbaba lowo geeshsha galmeessinoonni.",
+        "pregnant_assessment_updated": "Gowishi huxxitino mancho hinkishsha seendunni woyyeessi.",
+        "pregnant_assessment_deleted": "Galaado ayido nabbaba lowo geeshsha haqinoonni.",
+        "postnatal_assessment_created": "Postnatal assessment recorded successfully.",
+        "postnatal_assessment_updated": "Postnatal assessment updated successfully.",
+        "postnatal_assessment_deleted": "Postnatal assessment record deleted successfully.",
+        "child_assessment_created": "Child assessment recorded successfully.",
+        "child_assessment_updated": "Child assessment updated successfully.",
+        "child_assessment_deleted": "Child assessment record deleted successfully."
     }
 }
