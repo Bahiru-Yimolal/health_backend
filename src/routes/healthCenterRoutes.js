@@ -25,6 +25,7 @@ const {
   updateOwnHealthCenterUserController,
   assignPCWorkerController,
   updatePCWorkerAssignmentController,
+  listPCWorkersController,
 } = require("../controllers/healthCenterControllers");
 
 const router = express.Router();
@@ -147,5 +148,12 @@ router.patch(
   updatePCWorkerAssignmentController
 );
 
+router.get(
+  "/:id/pc-workers",
+  protect,
+  assignmentMiddleware,
+  permissionMiddleware("ASSIGN_PC_WORKERS"),
+  listPCWorkersController
+);
 
 module.exports = router;

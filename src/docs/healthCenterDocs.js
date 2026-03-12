@@ -473,3 +473,56 @@
  *       404:
  *         description: User or unit not found
  */
+/**
+* @swagger
+* /health-centers/{id}/pc-workers:
+*   get:
+*     summary: List all PC Workers assigned to sub-blocks of a specific Health Center
+*     tags: [HealthCenter Admin, Subcity Admin]
+*     security:
+*       - bearerAuth: []
+*     parameters:
+*       - $ref: '#/components/parameters/acceptLanguageHeader'
+*       - name: id
+*         in: path
+*         description: ID of the Health Center
+*         required: true
+*         schema:
+*           type: string
+*           format: uuid
+*     responses:
+*       200:
+*         description: List of PC Workers retrieved successfully
+*         content:
+*           application/json:
+*             schema:
+*               type: object
+*               properties:
+*                 success:
+*                   type: boolean
+*                   example: true
+*                 data:
+*                   type: array
+*                   items:
+*                     type: object
+*                     properties:
+*                       user_id:
+*                         type: string
+*                         format: uuid
+*                       first_name:
+*                         type: string
+*                       last_name:
+*                         type: string
+*                       phone_number:
+*                         type: string
+*                       email:
+*                         type: string
+*                       status:
+*                         type: string
+*       401:
+*         description: Unauthorized
+*       403:
+*         description: Forbidden (Jurisdiction violation)
+*       404:
+*         description: Health Center not found
+*/

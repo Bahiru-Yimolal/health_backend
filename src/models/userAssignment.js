@@ -12,6 +12,7 @@ const UserAssignment = sequelize.define(
     user_id: {
       type: DataTypes.UUID,
       allowNull: false,
+      unique: true,
       references: { model: "Users", key: "user_id" },
     },
     unit_id: {

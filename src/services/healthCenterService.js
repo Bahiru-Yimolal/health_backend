@@ -507,6 +507,67 @@ const updatePCWorkerAssignmentService = async ({
 };
 
 
+const listPCWorkersInHealthCenterService = async (healthCenterId, actor) => {
+  // 1. Validate Health Center
+  const healthCenter = await AdministrativeUnit.findByPk(healthCenterId);
+  if (!healthCenter || healthCenter.level !== "HEALTH_CENTER") {
+    throw new AppError("errors.health_center_not_found", 404);
+  }
+
+  // 2. Authorization: Actor must be assigned to this HC or a higher unit
+  // For now, mirroring existing jurisdiction checks
+  if (actor.unit.level === "SUBCITY") {
+    if (healthCenter.parent_id !== actor.unit.id) {
+      throw new AppError("errors.unit_outside_jurisdiction", 403);
+    }
+  } else if (actor.unit.level === "HEALTH_CENTER") {
+    if (healthCenter.id !== actor.unit.id) {
+      throw new AppError("errors.unit_outside_jurisdiction", 403);
+    }
+  }
+
+  // 3. Find all BLOCK IDs under this Health Center
+  // Hierarchy: HC -> Woreda -> Ketena -> Block
+  const blocksQuery = `
+    WITH RECURSIVE Hierarchy AS (
+      SELECT id, level FROM "AdministrativeUnits" WHERE id = :healthCenterId
+      UNION ALL
+      SELECT au.id, au.level FROM "AdministrativeUnits" au
+      INNER JOIN Hierarchy h ON au.parent_id = h.id
+    )
+    SELECT id FROM Hierarchy WHERE level = 'BLOCK';
+  `;
+
+  const blocks = await sequelize.query(blocksQuery, {
+    replacements: { healthCenterId },
+    type: sequelize.QueryTypes.SELECT
+  });
+
+  const blockIds = blocks.map(b => b.id);
+  if (!blockIds.length) return [];
+
+  // 4. Find all Users with PC_WORKER role assigned to these blocks
+  const workers = await User.findAll({
+    attributes: ["user_id", "first_name", "last_name", "phone_number", "email", "status"],
+    include: [
+      {
+        model: UserAssignment,
+        where: { unit_id: blockIds },
+        required: true,
+        include: [
+          {
+            model: Role,
+            where: { name: "PC_WORKER" },
+            required: true
+          }
+        ]
+      }
+    ]
+  });
+
+  return workers;
+};
+
 module.exports = {
   createHealthCenterService,
   listHealthCentersService,
@@ -519,4 +580,5 @@ module.exports = {
   updateOwnHealthCenterUserService,
   assignPCWorkerService,
   updatePCWorkerAssignmentService,
+  listPCWorkersInHealthCenterService,
 };

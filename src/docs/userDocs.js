@@ -718,3 +718,154 @@
  *       500:
  *         description: Internal server error
  */
+/**
+ * @swagger
+ * /users/login-info:
+ *   get:
+ *     summary: Get login statistics and history for the current user
+ *     description: Retrieve successful/failed login counts, last login details, and recent 5 login attempts.
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - $ref: '#/components/parameters/acceptLanguageHeader'
+ *     responses:
+ *       200:
+ *         description: Login information retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     success_count:
+ *                       type: integer
+ *                       example: 15
+ *                     failed_count:
+ *                       type: integer
+ *                       example: 2
+ *                     last_successful_login:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                           format: uuid
+ *                         login_at:
+ *                           type: string
+ *                           format: date-time
+ *                         ip_address:
+ *                           type: string
+ *                           example: "127.0.0.1"
+ *                         user_agent:
+ *                           type: string
+ *                     last_failed_login:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                           format: uuid
+ *                         login_at:
+ *                           type: string
+ *                           format: date-time
+ *                         ip_address:
+ *                           type: string
+ *                         user_agent:
+ *                           type: string
+ *                         failure_reason:
+ *                           type: string
+ *                     recent_history:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: string
+ *                           login_at:
+ *                             type: string
+ *                           ip_address:
+ *                             type: string
+ *                           user_agent:
+ *                             type: string
+ *                           status:
+ *                             type: string
+ *                           failure_reason:
+ *                             type: string
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
+/**
+ * @swagger
+ * /users/{userId}:
+ *   delete:
+ *     summary: Delete a user (UNASSIGNED status only)
+ *     description: Permanently delete a user from the system. This is only allowed for users who have not yet been assigned to any units or roles (status must be UNASSIGNED).
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - $ref: '#/components/parameters/acceptLanguageHeader'
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The unique ID of the user to delete.
+ *     responses:
+ *       200:
+ *         description: User deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: User deleted successfully.
+ *       400:
+ *         description: Cannot delete assigned or active user
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+/**
+ * @swagger
+ * /users/{userId}/deactivate:
+ *   patch:
+ *     summary: Deactivate a user
+ *     description: Change user status to DEACTIVATED, preventing them from logging in.
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - $ref: '#/components/parameters/acceptLanguageHeader'
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The unique ID of the user to deactivate.
+ *     responses:
+ *       200:
+ *         description: User deactivated successfully
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */

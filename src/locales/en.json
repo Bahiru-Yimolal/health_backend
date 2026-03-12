@@ -172,5 +172,46 @@
         "child_assessment_created": "Child assessment recorded successfully.",
         "child_assessment_updated": "Child assessment updated successfully.",
         "child_assessment_deleted": "Child assessment record deleted successfully."
+    },
+    "reports": {
+        "sections": {
+            "activity": "Activity",
+            "pregnant_women": "Pregnant Women",
+            "postnatal_women": "Postnatal Women (0-60 Days)",
+            "child": "Child (< 6 Years)",
+            "caregiving_behaviors": "Care Giving Behaviors"
+        },
+        "columns": {
+            "activity": "Activity",
+            "new": "New",
+            "repeat": "Repeat",
+            "age_category": "Age category",
+            "sex_category": "Sex category"
+        },
+        "rows": {
+            "activity_1_1": "1.1 Number of households receiving parental coaching service",
+            "activity_1_2": "1.2 Number of vulnerable households received parental coaching service",
+            "activity_1_3": "1.3 Number of households which are officially considered eligible for material and financial support",
+            "activity_1_4": "1.4 Number of mothers/parents/caregivers completed the full course of parental coaching",
+            "pregnant_2_1": "2.1 Number of pregnant women received parental coaching service",
+            "pregnant_2_2": "2.2 Number of pregnant women linked for first ANC (Antenatal Care)",
+            "pregnant_2_3": "2.3 Number of pregnant mothers who were re-linked for ANC (Antenatal Care)",
+            "postnatal_3_1": "3.1 Number of women on postnatal period received parental coaching service",
+            "postnatal_3_2": "3.2 Number of women on postnatal period linked to PNC (Postnatal Care) service",
+            "child_4_1": "4.1 Number of children received ECD service",
+            "child_4_2": "4.2 Number of children 6-59 months screened for acute malnutrition",
+            "child_4_3": "4.3 Number of children 6-59 months identified as SAM",
+            "child_4_4": "4.4 Number of children 6-59 months identified as MAM",
+            "child_4_5": "4.5 Number of children suffering violence/abuse",
+            "child_4_6": "4.6 Number of children with disability",
+            "child_4_7": "4.7 Number of children assessed for developmental milestones",
+            "child_4_8": "4.8 Number of children identified as suspected developmental delay",
+            "child_4_9": "4.9 Number of children identified as developmental delay",
+            "child_4_10": "4.10 Number of children linked/referred for service",
+            "caregiving_5_1": "5.1 Number of parents/caregivers assessed for talking with children (reading, storytelling, singing, playing) and counseled",
+            "caregiving_5_2": "5.2 Number of parents/caregivers assessed for child outdoor play engagement and counseled",
+            "caregiving_5_3": "5.3 Number of parents/caregivers assessed for understanding and responding to their cues and needs; and counseled",
+            "caregiving_5_4": "5.4 Number of parents/caregivers assessed for positive disciplining and counseled"
+        }
     }
 }

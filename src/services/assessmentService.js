@@ -5,6 +5,9 @@ const HouseholdVisit = require("../models/householdVisit");
 const Child = require("../models/childModel");
 const Referral = require("../models/referral");
 const sequelize = require("../config/database");
+const { findHealthCenterId } = require("../utils/unitResolver");
+const { getIO } = require("../utils/socket");
+const Family = require("../models/familyModel");
 
 /**
  * Create a new pregnant assessment
@@ -33,16 +36,36 @@ const createPregnantAssessmentService = async (assessmentData) => {
 
         // 4. Auto-create Referral if needed
         if (assessment.referred_to_facility) {
-            await Referral.create({
+            // Resolve Health Center ID
+            const family = await Family.findByPk(visit.family_id, { transaction: t });
+            const healthFacilityId = await findHealthCenterId(family.block_id);
+
+            const referral = await Referral.create({
                 visit_id: assessment.visit_id,
                 beneficiary_id: assessment.mother_id,
                 beneficiary_type: "PREGNANT_MOTHER",
                 assessment_id: assessment.id,
                 pc_worker_id: visit.visitor_id,
+                health_facility_id: healthFacilityId,
                 reason: assessment.referral_reason || "Referred from pregnant assessment",
                 referral_date: new Date(),
                 status: "PENDING"
             }, { transaction: t });
+
+            // 5. Emit Real-time Notification
+            if (healthFacilityId) {
+                try {
+                    const io = getIO();
+                    io.to(`referrals_hc_${healthFacilityId}`).emit("new_referral", {
+                        id: referral.id,
+                        beneficiary_type: "PREGNANT_MOTHER",
+                        reason: referral.reason,
+                        visit_id: referral.visit_id
+                    });
+                } catch (err) {
+                    console.error("Socket emit failed:", err.message);
+                }
+            }
         }
 
         return assessment;
@@ -149,16 +172,36 @@ const createPostnatalAssessmentService = async (assessmentData) => {
 
         // 4. Auto-create Referral if needed
         if (assessment.referred_to_facility) {
-            await Referral.create({
+            // Resolve Health Center ID
+            const family = await Family.findByPk(visit.family_id, { transaction: t });
+            const healthFacilityId = await findHealthCenterId(family.block_id);
+
+            const referral = await Referral.create({
                 visit_id: assessment.visit_id,
                 beneficiary_id: assessment.mother_id,
                 beneficiary_type: "LACTATING_MOTHER",
                 assessment_id: assessment.id,
                 pc_worker_id: visit.visitor_id,
+                health_facility_id: healthFacilityId,
                 reason: assessment.referral_reason || "Referred from postnatal assessment",
                 referral_date: new Date(),
                 status: "PENDING"
             }, { transaction: t });
+
+            // 5. Emit Real-time Notification
+            if (healthFacilityId) {
+                try {
+                    const io = getIO();
+                    io.to(`referrals_hc_${healthFacilityId}`).emit("new_referral", {
+                        id: referral.id,
+                        beneficiary_type: "LACTATING_MOTHER",
+                        reason: referral.reason,
+                        visit_id: referral.visit_id
+                    });
+                } catch (err) {
+                    console.error("Socket emit failed:", err.message);
+                }
+            }
         }
 
         return assessment;
@@ -332,16 +375,36 @@ const createChildAssessmentService = async (assessmentData) => {
 
         // 4. Handle Automatic Referral
         if (assessmentData.referred_to_facility === true) {
-            await Referral.create({
+            // Resolve Health Center ID
+            const family = await Family.findByPk(visit.family_id, { transaction: t });
+            const healthFacilityId = await findHealthCenterId(family.block_id);
+
+            const referral = await Referral.create({
                 visit_id: assessmentData.visit_id,
                 beneficiary_id: assessmentData.child_id,
                 beneficiary_type: "CHILD",
                 assessment_id: assessment.id,
                 pc_worker_id: visit.visitor_id,
+                health_facility_id: healthFacilityId,
                 reason: assessmentData.referral_reason || "Referred from child assessment",
                 referral_date: new Date(),
                 status: "PENDING"
             }, { transaction: t });
+
+            // 5. Emit Real-time Notification
+            if (healthFacilityId) {
+                try {
+                    const io = getIO();
+                    io.to(`referrals_hc_${healthFacilityId}`).emit("new_referral", {
+                        id: referral.id,
+                        beneficiary_type: "CHILD",
+                        reason: referral.reason,
+                        visit_id: referral.visit_id
+                    });
+                } catch (err) {
+                    console.error("Socket emit failed:", err.message);
+                }
+            }
         }
 
         return assessment;

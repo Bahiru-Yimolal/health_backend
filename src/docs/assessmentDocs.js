@@ -7,7 +7,7 @@
 
 /**
  * @swagger
- * /api/assessments/pregnant:
+ * /assessments/pregnant:
  *   post:
  *     summary: Record a pregnant mother assessment during a visit
  *     tags: [Assessments]
@@ -71,7 +71,7 @@
  *       500:
  *         description: Server error
  *
- * /api/assessments/pregnant/{id}:
+ * /assessments/pregnant/{id}:
  *   parameters:
  *     - in: path
  *       name: id
@@ -165,7 +165,7 @@
  *       500:
  *         description: Server error
  *
- * /api/assessments/postnatal:
+ * /assessments/postnatal:
  *   post:
  *     summary: Record a postnatal mother assessment during a visit
  *     tags: [Assessments]
@@ -227,7 +227,7 @@
  *       500:
  *         description: Server error
  *
- * /api/assessments/postnatal/{id}:
+ * /assessments/postnatal/{id}:
  *   get:
  *     summary: Get a postnatal assessment by ID
  *     tags: [Assessments]
@@ -328,7 +328,7 @@
  *       500:
  *         description: Server error
  *
- * /api/assessments/child:
+ * /assessments/child:
  *   post:
  *     summary: Record a child assessment
  *     tags: [Assessments]
@@ -413,7 +413,7 @@
  *       500:
  *         description: Server error
  *
- * /api/assessments/child/{id}:
+ * /assessments/child/{id}:
  *   parameters:
  *     - in: path
  *       name: id

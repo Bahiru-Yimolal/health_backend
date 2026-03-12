@@ -1,7 +1,0 @@
-const express = require("express");
-const router = express.Router();
-
-// Placeholder for woreda routes
-// router.get("/", ...);
-
-module.exports = router;

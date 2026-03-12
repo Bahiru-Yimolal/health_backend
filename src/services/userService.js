@@ -7,6 +7,7 @@ const {
   UserPermission,
   RolePermission,
   AuditLog,
+  LoginLog,
 } = require("../models");
 
 const { hashPassword, comparePassword } = require("../utils/hashUtils");
@@ -143,21 +144,49 @@ const registerUserService = async (
 };
 
 
-const loginService = async (phone_number, password) => {
+const loginService = async (phone_number, password, ip_address, user_agent) => {
   // 1️⃣ Find user by phone number
   const user = await User.findOne({ where: { phone_number } });
-  if (!user) throw new AppError("errors.invalid_credentials", 401);
+
+  const logAttempt = async (status, failure_reason = null) => {
+    try {
+      await LoginLog.create({
+        user_id: user ? user.user_id : null,
+        identifier: phone_number,
+        ip_address: ip_address || null,
+        user_agent: user_agent || null,
+        status,
+        failure_reason
+      });
+    } catch (logError) {
+      console.error("Failed to create login log:", logError);
+    }
+  };
+
+  if (!user) {
+    await logAttempt("FAILED", "invalid_credentials");
+    throw new AppError("errors.invalid_credentials", 401);
+  }
 
   // 2️⃣ Check password
   const isMatch = await comparePassword(password, user.password);
-  if (!isMatch) throw new AppError("errors.invalid_credentials", 401);
+  if (!isMatch) {
+    await logAttempt("FAILED", "invalid_password");
+    throw new AppError("errors.invalid_credentials", 401);
+  }
 
   // 3️⃣ Check if user is assigned
   if (user.status === "UNASSIGNED") {
+    await logAttempt("SUCCESS", "account_pending"); // Log as success but pending status
     return {
       message: "errors.account_pending",
       status: "UNASSIGNED",
     };
+  }
+
+  if (user.status === "DEACTIVATED") {
+    await logAttempt("FAILED", "account_deactivated");
+    throw new AppError("errors.account_deactivated", 403);
   }
 
   // 4️⃣ Fetch all assignments for this user
@@ -206,6 +235,8 @@ const loginService = async (phone_number, password) => {
   };
 
   const token = generateToken(tokenPayload);
+
+  await logAttempt("SUCCESS");
 
   return {
     token,
@@ -678,6 +709,91 @@ const getAllUsersWithPendingService = async () => {
 
 
 
+const getUserLoginInfoService = async (userId) => {
+  try {
+    const successCount = await LoginLog.count({
+      where: { user_id: userId, status: "SUCCESS" },
+    });
+
+    const failedCount = await LoginLog.count({
+      where: { user_id: userId, status: "FAILED" },
+    });
+
+    const lastSuccess = await LoginLog.findOne({
+      where: { user_id: userId, status: "SUCCESS" },
+      order: [["createdAt", "DESC"]],
+      attributes: ["id", ["createdAt", "login_at"], "ip_address", "user_agent"],
+    });
+
+    const lastFailed = await LoginLog.findOne({
+      where: { user_id: userId, status: "FAILED" },
+      order: [["createdAt", "DESC"]],
+      attributes: ["id", ["createdAt", "login_at"], "ip_address", "user_agent", "failure_reason"],
+    });
+
+    // Recent history (last 5 attempts)
+    const recentHistory = await LoginLog.findAll({
+      where: { user_id: userId },
+      order: [["createdAt", "DESC"]],
+      limit: 5,
+      attributes: ["id", ["createdAt", "login_at"], "ip_address", "user_agent", "status", "failure_reason"],
+    });
+
+    return {
+      success_count: successCount,
+      failed_count: failedCount,
+      last_successful_login: lastSuccess,
+      last_failed_login: lastFailed,
+      recent_history: recentHistory
+    };
+  } catch (error) {
+    console.error("Error in getUserLoginInfoService:", error);
+    throw new AppError("Unable to fetch login information", 500);
+  }
+};
+
+const deleteUserService = async (userId) => {
+  const transaction = await User.sequelize.transaction();
+  try {
+    const user = await User.findByPk(userId, { transaction });
+
+    if (!user) {
+      throw new AppError("errors.user_not_found", 404);
+    }
+
+    if (user.status !== "UNASSIGNED") {
+      throw new AppError("errors.cannot_delete_assigned_user", 400);
+    }
+
+    // Cleanup associated records that might exist for unassigned users
+    // (In practice, unassigned shouldn't have many, but it's safer)
+    await UserAssignment.destroy({ where: { user_id: userId }, transaction });
+    await LoginLog.destroy({ where: { user_id: userId }, transaction });
+
+    // Hard delete the user
+    await user.destroy({ transaction });
+
+    await transaction.commit();
+    return { success: true };
+  } catch (error) {
+    if (transaction) await transaction.rollback();
+    throw error;
+  }
+};
+
+const deactivateUserService = async (userId) => {
+  const user = await User.findByPk(userId);
+
+  if (!user) {
+    throw new AppError("errors.user_not_found", 404);
+  }
+
+  user.status = "DEACTIVATED";
+  await user.save();
+
+  return { success: true };
+};
+
 module.exports = {
   registerUserService,
   loginService,
@@ -690,6 +806,8 @@ module.exports = {
   resetUserPasswordByIdService,
   updateLanguagePreferenceService,
   getUserByIdService,
-  getAllUsersWithPendingService
-
+  getAllUsersWithPendingService,
+  getUserLoginInfoService,
+  deleteUserService,
+  deactivateUserService
 };

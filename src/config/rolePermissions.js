@@ -5,7 +5,7 @@ const Roles = {
     HEAD: "HEAD",
     SUPERVISOR: "SUPERVISOR",
     PC_WORKER: "PC_WORKER",
-    // Add other roles as needed
+    DATA_ENCODER: "DATA_ENCODER",
 };
 
 const Permissions = {
@@ -13,7 +13,6 @@ const Permissions = {
     MANAGE_COMMUNITY_UNITS: "MANAGE_COMMUNITY_UNITS",
     MANAGE_FAMILIES: "MANAGE_FAMILIES",
     ASSIGN_PC_WORKERS: "ASSIGN_PC_WORKERS",
-    // Add specific overrides like EXPORT_REPORTS here when needed
     EXPORT_REPORTS: "EXPORT_REPORTS",
     MANAGE_VISITS: "MANAGE_VISITS",
 };
@@ -21,21 +20,32 @@ const Permissions = {
 const DefaultRolePermissions = {
     [Roles.ADMIN]: [
         Permissions.ADMIN_PERMISSIONS,
+        Permissions.ASSIGN_PC_WORKERS,
+        Permissions.MANAGE_FAMILIES,
         Permissions.MANAGE_COMMUNITY_UNITS,
+        Permissions.MANAGE_VISITS,
+        Permissions.EXPORT_REPORTS,
     ],
     [Roles.HEAD]: [
         Permissions.EXPORT_REPORTS,
     ],
     [Roles.SUPERVISOR]: [
+        Permissions.ADMIN_PERMISSIONS,
         Permissions.ASSIGN_PC_WORKERS,
         Permissions.MANAGE_FAMILIES,
         Permissions.MANAGE_COMMUNITY_UNITS,
         Permissions.MANAGE_VISITS,
+        Permissions.EXPORT_REPORTS,
     ],
     [Roles.PC_WORKER]: [
         Permissions.MANAGE_FAMILIES,
         Permissions.MANAGE_VISITS,
+        Permissions.EXPORT_REPORTS,
     ],
+    [Roles.DATA_ENCODER]: [
+        Permissions.MANAGE_FAMILIES,
+    ],
+
 };
 
 module.exports = {

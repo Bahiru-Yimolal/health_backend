@@ -17,6 +17,10 @@ if (fs.existsSync(stateFilePath)) {
 // ---------------------------------
 
 const PORT = process.env.PORT || 5000;
+const http = require("http");
+const socketUtil = require("./src/utils/socket");
+
+const server = http.createServer(app);
 
 sequelize
   .sync({ alter: true })
@@ -27,14 +31,15 @@ sequelize
     const syncPermissions = require("./src/utils/permissionSync");
     await syncPermissions();
 
-    app.listen(PORT, () => {
+    // Initialize Global Socket
+    socketUtil.init(server);
+    console.log("Socket.io initialized successfully");
+
+    server.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
 
-    require("./src/utils/scherduler")
-    // Dynamically import 'open' to avoid the ESM error
-    // const { default: open } = await import("open");
-    // open(`http://localhost:${PORT}/api/docs`);
+    require("./src/utils/scherduler");
   })
   .catch((error) => {
     console.error("Error syncing database:", error);

@@ -15,6 +15,7 @@ const PregnantAssessment = require("./pregnantAssessment");
 const PostnatalAssessment = require("./postnatalAssessment");
 const ChildAssessment = require("./childAssessment");
 const Referral = require("./referral");
+const LoginLog = require("./loginLogModel");
 
 // User -> UserAssignment
 User.hasMany(UserAssignment, { foreignKey: "user_id" });
@@ -95,22 +96,22 @@ HouseholdVisit.belongsTo(Family, { foreignKey: "family_id", as: "Family" });
 
 // HouseholdVisit -> Assessments (1-to-1 per visit type)
 HouseholdVisit.hasOne(PregnantAssessment, { foreignKey: "visit_id", onDelete: "CASCADE" });
-PregnantAssessment.belongsTo(HouseholdVisit, { foreignKey: "visit_id" });
+PregnantAssessment.belongsTo(HouseholdVisit, { foreignKey: "visit_id", as: "visit" });
 
 HouseholdVisit.hasOne(PostnatalAssessment, { foreignKey: "visit_id", onDelete: "CASCADE" });
-PostnatalAssessment.belongsTo(HouseholdVisit, { foreignKey: "visit_id" });
+PostnatalAssessment.belongsTo(HouseholdVisit, { foreignKey: "visit_id", as: "visit" });
 
 HouseholdVisit.hasOne(ChildAssessment, { foreignKey: "visit_id", onDelete: "CASCADE" });
-ChildAssessment.belongsTo(HouseholdVisit, { foreignKey: "visit_id" });
+ChildAssessment.belongsTo(HouseholdVisit, { foreignKey: "visit_id", as: "visit" });
 
 // Assessments -> Dependent Models
-PregnantAssessment.belongsTo(PregnantMother, { foreignKey: "mother_id" });
+PregnantAssessment.belongsTo(PregnantMother, { foreignKey: "mother_id", as: "mother" });
 PregnantMother.hasMany(PregnantAssessment, { foreignKey: "mother_id" });
 
-PostnatalAssessment.belongsTo(LactatingMother, { foreignKey: "mother_id" });
+PostnatalAssessment.belongsTo(LactatingMother, { foreignKey: "mother_id", as: "mother" });
 LactatingMother.hasMany(PostnatalAssessment, { foreignKey: "mother_id" });
 
-ChildAssessment.belongsTo(Child, { foreignKey: "child_id" });
+ChildAssessment.belongsTo(Child, { foreignKey: "child_id", as: "child" });
 Child.hasMany(ChildAssessment, { foreignKey: "child_id" });
 
 // --- REFERRAL ASSOCIATIONS ---
@@ -133,6 +134,10 @@ Referral.belongsTo(PostnatalAssessment, { foreignKey: "assessment_id", constrain
 ChildAssessment.hasOne(Referral, { foreignKey: "assessment_id", constraints: false });
 Referral.belongsTo(ChildAssessment, { foreignKey: "assessment_id", constraints: false });
 
+// User -> LoginLog (1-to-Many)
+User.hasMany(LoginLog, { foreignKey: "user_id" });
+LoginLog.belongsTo(User, { foreignKey: "user_id" });
+
 module.exports = {
   User,
   AdministrativeUnit,
@@ -151,6 +156,5 @@ module.exports = {
   PostnatalAssessment,
   ChildAssessment,
   Referral,
+  LoginLog,
 };
-
-

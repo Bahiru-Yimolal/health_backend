@@ -7,7 +7,7 @@
 
 /**
  * @swagger
- * /api/visits:
+ * /visits:
  *   post:
  *     summary: Start a new household visit
  *     tags: [Visits]
@@ -160,7 +160,7 @@
  *       500:
  *         description: Server error
  * 
- * /api/visits/family/{family_id}:
+ * /visits/family/{family_id}:
  *   get:
  *     summary: Fetch paginated visit history for a specific family
  *     tags: [Visits]

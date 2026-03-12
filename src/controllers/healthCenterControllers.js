@@ -10,7 +10,21 @@ const {
   updateOwnHealthCenterUserService,
   assignPCWorkerService,
   updatePCWorkerAssignmentService,
+  listPCWorkersInHealthCenterService,
 } = require("../services/healthCenterService");
+
+const listPCWorkersController = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const workers = await listPCWorkersInHealthCenterService(id, req.user);
+    res.status(200).json({
+      success: true,
+      data: workers,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 const createHealthCenterLevelUserController = async (req, res, next) => {
   try {
@@ -229,4 +243,5 @@ module.exports = {
   updateOwnHealthCenterUserController,
   assignPCWorkerController,
   updatePCWorkerAssignmentController,
+  listPCWorkersController,
 };

@@ -11,7 +11,10 @@ const {
   resetUserPasswordByIdController,
   updateLanguagePreferenceController,
   getUserByIdController,
-  getAllUsersWithPendingStatusController
+  getAllUsersWithPendingStatusController,
+  getUserLoginInfoController,
+  deleteUserController,
+  deactivateUserController
 } = require("../controllers/userControllers");
 const {
   validateUser,
@@ -59,7 +62,13 @@ router
     permissionMiddleware("ADMIN_PERMISSIONS"), resetUserPasswordByIdController);
 router.route("/pendingStatus").get(protect, getAllUsersWithPendingStatusController);
 router.patch("/language", protect, updateLanguagePreferenceController);
-router.get("/:userId", protect, getUserByIdController);
+router.get("/login-info", protect, getUserLoginInfoController);
+router
+  .route("/:userId")
+  .get(protect, getUserByIdController)
+  .delete(protect, assignmentMiddleware, permissionMiddleware("ADMIN_PERMISSIONS"), deleteUserController);
+
+router.patch("/:userId/deactivate", protect, assignmentMiddleware, permissionMiddleware("ADMIN_PERMISSIONS"), deactivateUserController);
 
 // router.route("/sendBulkEmail").post(protect,validateEmailAttributes, sendBulkEmailController);
 

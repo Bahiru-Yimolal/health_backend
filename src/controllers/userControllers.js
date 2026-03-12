@@ -10,7 +10,10 @@ const {
   getAllUsersWithPendingService,
   resetUserPasswordByIdService,
   updateLanguagePreferenceService,
-  getUserByIdService
+  getUserByIdService,
+  getUserLoginInfoService,
+  deleteUserService,
+  deactivateUserService
 } = require("../services/userService");
 
 const authUserController = async (req, res, next) => {
@@ -34,7 +37,10 @@ const authUserController = async (req, res, next) => {
     }
     // --------------------------------
 
-    const result = await loginService(phone_number, password);
+    const ip_address = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const user_agent = req.headers['user-agent'];
+
+    const result = await loginService(phone_number, password, ip_address, user_agent);
 
     // If there's a message key, translate it
     if (req.t && result.message && result.message.startsWith("errors.")) {
@@ -278,6 +284,47 @@ const getAllUsersWithPendingStatusController = async (req, res, next) => {
   }
 };
 
+const getUserLoginInfoController = async (req, res, next) => {
+  try {
+    const userId = req.user.payload.user_id;
+    const loginInfo = await getUserLoginInfoService(userId);
+
+    res.status(200).json({
+      success: true,
+      data: loginInfo
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const deleteUserController = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    await deleteUserService(userId);
+
+    res.status(200).json({
+      success: true,
+      message: req.t ? req.t("success.user_deleted") : "User deleted successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const deactivateUserController = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    await deactivateUserService(userId);
+
+    res.status(200).json({
+      success: true,
+      message: req.t ? req.t("success.user_deactivated") : "User deactivated successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 module.exports = {
   userRegistrationController,
@@ -291,5 +338,8 @@ module.exports = {
   resetUserPasswordByIdController,
   updateLanguagePreferenceController,
   getUserByIdController,
-  getAllUsersWithPendingStatusController
+  getAllUsersWithPendingStatusController,
+  getUserLoginInfoController,
+  deleteUserController,
+  deactivateUserController
 };
