@@ -116,6 +116,14 @@ router.delete(
     deletePostnatalAssessmentController
 );
 
+router.delete(
+    "/pregnant/:id",
+    protect,
+    assignmentMiddleware,
+    permissionMiddleware("MANAGE_VISITS"),
+    deletePregnantAssessmentController
+);
+
 /**
  * @route POST/PATCH /api/assessments/child
  * @desc Record or Update a child assessment

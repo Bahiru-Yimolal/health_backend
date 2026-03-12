@@ -1,6 +1,6 @@
 const express = require("express");
 const referralController = require("../controllers/referralController");
-const { protect, permissionMiddleware } = require("../middlewares/authMiddleware");
+const { protect,assignmentMiddleware, permissionMiddleware } = require("../middlewares/authMiddleware");
 const { validateReferralFeedbackInput, validateReferralQuery } = require("../validators/referralValidators");
 
 const router = express.Router();
@@ -9,6 +9,7 @@ const router = express.Router();
 router.get(
     "/incoming",
     protect,
+    assignmentMiddleware,
     permissionMiddleware("RECEIVE_REFERRALS"),
     validateReferralQuery,
     referralController.getIncomingReferrals
@@ -17,6 +18,7 @@ router.get(
 router.patch(
     "/:id/feedback",
     protect,
+    assignmentMiddleware,
     permissionMiddleware("RECEIVE_REFERRALS"),
     validateReferralFeedbackInput,
     referralController.provideReferralFeedback
@@ -28,6 +30,7 @@ router.patch(
 router.get(
     "/sent",
     protect,
+    assignmentMiddleware,
     permissionMiddleware("MANAGE_VISITS"),
     validateReferralQuery,
     referralController.getSentReferrals
@@ -37,6 +40,7 @@ router.get(
 router.get(
     "/stats",
     protect,
+    assignmentMiddleware,
     permissionMiddleware("MANAGE_VISITS"),
     referralController.getReferralStats
 );
@@ -44,6 +48,7 @@ router.get(
 router.get(
     "/:id",
     protect,
+    assignmentMiddleware,
     permissionMiddleware("MANAGE_VISITS"),
     referralController.getReferralDetails
 );

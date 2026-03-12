@@ -14,7 +14,8 @@ const {
   getAllUsersWithPendingStatusController,
   getUserLoginInfoController,
   deleteUserController,
-  deactivateUserController
+  deactivateUserController,
+  activateUserController
 } = require("../controllers/userControllers");
 const {
   validateUser,
@@ -69,6 +70,7 @@ router
   .delete(protect, assignmentMiddleware, permissionMiddleware("ADMIN_PERMISSIONS"), deleteUserController);
 
 router.patch("/:userId/deactivate", protect, assignmentMiddleware, permissionMiddleware("ADMIN_PERMISSIONS"), deactivateUserController);
+router.patch("/:userId/activate", protect, assignmentMiddleware, permissionMiddleware("ADMIN_PERMISSIONS"), activateUserController);
 
 // router.route("/sendBulkEmail").post(protect,validateEmailAttributes, sendBulkEmailController);
 

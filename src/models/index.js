@@ -122,6 +122,9 @@ Referral.belongsTo(HouseholdVisit, { foreignKey: "visit_id" });
 User.hasMany(Referral, { foreignKey: "pc_worker_id" });
 Referral.belongsTo(User, { foreignKey: "pc_worker_id", as: "PCWorker" });
 
+Referral.belongsTo(AdministrativeUnit, { foreignKey: "health_facility_id", as: "HealthFacility" });
+AdministrativeUnit.hasMany(Referral, { foreignKey: "health_facility_id", as: "Referrals" });
+
 Referral.belongsTo(User, { foreignKey: "feedback_by", as: "FeedbackProvider" });
 
 // Assessments -> Referrals (One-to-One: an assessment can trigger one referral)

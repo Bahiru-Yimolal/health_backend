@@ -6,6 +6,7 @@ const Roles = {
     SUPERVISOR: "SUPERVISOR",
     PC_WORKER: "PC_WORKER",
     DATA_ENCODER: "DATA_ENCODER",
+    FACILITY: "FACILITY",
 };
 
 const Permissions = {
@@ -15,6 +16,7 @@ const Permissions = {
     ASSIGN_PC_WORKERS: "ASSIGN_PC_WORKERS",
     EXPORT_REPORTS: "EXPORT_REPORTS",
     MANAGE_VISITS: "MANAGE_VISITS",
+    RECEIVE_REFERRALS: "RECEIVE_REFERRALS",
 };
 
 const DefaultRolePermissions = {
@@ -44,6 +46,11 @@ const DefaultRolePermissions = {
     ],
     [Roles.DATA_ENCODER]: [
         Permissions.MANAGE_FAMILIES,
+    ],
+    [Roles.FACILITY]: [
+        Permissions.MANAGE_VISITS,
+        Permissions.RECEIVE_REFERRALS,
+        Permissions.EXPORT_REPORTS,
     ],
 
 };

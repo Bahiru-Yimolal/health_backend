@@ -27,10 +27,6 @@ const assignUserToUnit = async ({ userId, unitId, roleId, permissions = null }) 
       throw new AppError("errors.internal_error", 404);
     }
 
-    if (user.status !== "UNASSIGNED") {
-      throw new AppError("errors.user_already_assigned", 400);
-    }
-
     const assignment = await UserAssignment.create(
       { user_id: userId, unit_id: unitId, role_id: roleId },
       { transaction }

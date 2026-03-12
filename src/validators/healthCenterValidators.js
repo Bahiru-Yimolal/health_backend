@@ -107,11 +107,9 @@ const assignPCWorkerSchema = Joi.object({
 
   unitIds: Joi.array()
     .items(Joi.string().uuid())
-    .min(1)
     .required()
     .messages({
       "array.base": "errors.unit_ids_must_be_array",
-      "array.min": "errors.unit_ids_required",
       "any.required": "errors.unit_ids_required",
       "string.guid": "errors.invalid_uuid",
     }),

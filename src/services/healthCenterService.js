@@ -4,6 +4,7 @@ const Role = require("../models/roleModel");
 const Permission = require("../models/permissionModel");
 const UserPermission = require("../models/userPermissionModel");
 const UserAssignment = require("../models/userAssignment");
+const AuditLog = require("../models/auditLogModel");
 const sequelize = require("../config/database");
 const { AppError } = require("../middlewares/errorMiddleware");
 const { assignUserToUnit } = require("./assignnmentService"); // Correct import path
@@ -474,7 +475,8 @@ const updatePCWorkerAssignmentService = async ({
       throw new AppError("errors.role_not_found", 404);
     }
 
-    await UserAssignment.destroy({
+    // Get assignment IDs before deleting to clean up permissions
+    const existingAssignments = await UserAssignment.findAll({
       where: {
         user_id: userId,
         role_id: role.id,
@@ -482,6 +484,22 @@ const updatePCWorkerAssignmentService = async ({
       },
       transaction: t
     });
+
+    const assignmentIds = existingAssignments.map(a => a.id);
+
+    if (assignmentIds.length > 0) {
+      // Clean up User-specific permissions
+      await UserPermission.destroy({
+        where: { assignment_id: assignmentIds },
+        transaction: t
+      });
+
+      // Remove assignments
+      await UserAssignment.destroy({
+        where: { id: assignmentIds },
+        transaction: t
+      });
+    }
 
     // 3. Add new assignments
     for (const unitId of unitIds) {
@@ -496,6 +514,45 @@ const updatePCWorkerAssignmentService = async ({
       }, { transaction: t });
 
       results.push(assignment);
+    }
+
+    // 4. Final Status Sync & Audit
+    if (results.length === 0) {
+      // If we cleared all assignments within our jurisdiction, and no new ones added
+      // We check if they have ANY assignments left globally
+      const remainingGlobalAssignments = await UserAssignment.count({
+        where: { user_id: userId },
+        transaction: t
+      });
+
+      if (remainingGlobalAssignments === 0) {
+        await User.update(
+          { status: "UNASSIGNED" },
+          { where: { user_id: userId }, transaction: t }
+        );
+      }
+
+      await AuditLog.create({
+        user_id: actor.id,
+        unit_id: actor.unit.id,
+        action: "UNASSIGN_PC_WORKER",
+        target_id: userId,
+        metadata: { cleaned_assignments: assignmentIds }
+      }, { transaction: t });
+
+    } else {
+      await User.update(
+        { status: "ACTIVE" },
+        { where: { user_id: userId }, transaction: t }
+      );
+
+      await AuditLog.create({
+        user_id: actor.id,
+        unit_id: actor.unit.id,
+        action: "UPDATE_PC_WORKER_ASSIGNMENT",
+        target_id: userId,
+        metadata: { new_assignments: results.map(r => r.id) }
+      }, { transaction: t });
     }
 
     await t.commit();

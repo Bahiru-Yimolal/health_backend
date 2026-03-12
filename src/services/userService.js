@@ -794,6 +794,19 @@ const deactivateUserService = async (userId) => {
   return { success: true };
 };
 
+const activateUserService = async (userId) => {
+  const user = await User.findByPk(userId);
+
+  if (!user) {
+    throw new AppError("errors.user_not_found", 404);
+  }
+
+  user.status = "ACTIVE";
+  await user.save();
+
+  return { success: true };
+};
+
 module.exports = {
   registerUserService,
   loginService,
@@ -809,5 +822,6 @@ module.exports = {
   getAllUsersWithPendingService,
   getUserLoginInfoService,
   deleteUserService,
-  deactivateUserService
+  deactivateUserService,
+  activateUserService
 };

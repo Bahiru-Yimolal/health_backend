@@ -265,6 +265,14 @@
  *     tags: [Ketenas]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: woredaId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The Ketena ID
  *     responses:
  *       200:
  *         description: A list of ketenas

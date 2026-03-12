@@ -351,6 +351,8 @@ const deletePostnatalAssessmentService = async (id) => {
     });
 };
 
+
+
 /**
  * Create a child assessment
  * @param {Object} assessmentData - Data for the child assessment
@@ -534,6 +536,7 @@ module.exports = {
     updatePostnatalAssessmentService,
     getPostnatalAssessmentByIdService,
     deletePostnatalAssessmentService,
+    deletePregnantAssessmentService,
     createChildAssessmentService,
     updateChildAssessmentService,
     getChildAssessmentByIdService,

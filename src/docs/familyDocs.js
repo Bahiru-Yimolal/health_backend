@@ -179,6 +179,157 @@
  *       500:
  *         description: Internal server error fetching family
  *
+ *   put:
+ *     summary: Update an existing Family and its dependents
+ *     tags: [Families]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The existing Family UUID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               block_id:
+ *                 type: string
+ *                 format: uuid
+ *                 example: "123e4567-e89b-12d3-a456-426614174000"
+ *               registration_number:
+ *                 type: string
+ *                 example: "Aq/A11/B20/001"
+ *               house_number:
+ *                 type: string
+ *                 example: "123"
+ *               head_of_household_name:
+ *                 type: string
+ *                 example: "Abebe Kebede (Updated)"
+ *               phone_number:
+ *                 type: string
+ *                 example: "0911223344"
+ *               is_vulnerable:
+ *                 type: boolean
+ *                 example: true
+ *               is_safetynet_beneficiary:
+ *                 type: boolean
+ *                 example: false
+ *               health_insurance_type:
+ *                 type: string
+ *                 enum: [FREE_OR_SPONSORED, PAYING, NOT_BENEFICIARY]
+ *                 example: "PAYING"
+ *               is_temporary_direct_support_beneficiary:
+ *                 type: boolean
+ *                 example: false
+ *               latitude:
+ *                 type: number
+ *                 example: 9.005401
+ *               longitude:
+ *                 type: number
+ *                 example: 38.763611
+ *               guardian_name:
+ *                 type: string
+ *                 example: "Almaz"
+ *               guardian_gender:
+ *                 type: string
+ *                 enum: [MALE, FEMALE]
+ *               guardian_dob:
+ *                 type: string
+ *                 format: date
+ *               guardian_phone_number:
+ *                 type: string
+ *               pregnant_mother:
+ *                 type: object
+ *                 properties:
+ *                   name:
+ *                     type: string
+ *                   dob:
+ *                     type: string
+ *                     format: date
+ *                 nullable: true
+ *               lactating_mother:
+ *                 type: object
+ *                 properties:
+ *                   name:
+ *                     type: string
+ *                   dob:
+ *                     type: string
+ *                     format: date
+ *                 nullable: true
+ *               children:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     name:
+ *                       type: string
+ *                     gender:
+ *                       type: string
+ *                       enum: [MALE, FEMALE]
+ *                     dob:
+ *                       type: string
+ *                       format: date
+ *                     vulnerable_to_growth_restriction:
+ *                       type: boolean
+ *     responses:
+ *       200:
+ *         description: Family updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Family updated successfully"
+ *                 data:
+ *                   type: object
+ *       400:
+ *         description: Validation error or invalid ID
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden (insufficient permissions)
+ *       404:
+ *         description: Family or Block not found
+ *       500:
+ *         description: Internal server error updating
+ *
+ *   delete:
+ *     summary: Delete a Family record and its dependents
+ *     tags: [Families]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The Family UUID to delete
+ *     responses:
+ *       200:
+ *         description: Family deleted successfully
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden (PC Worker can only delete their own creation)
+ *       404:
+ *         description: Family not found
+ *       500:
+ *         description: Internal server error deleting family
+ *
  * /families/creator/{creatorId}:
  *   get:
  *     summary: Fetch families registered by a specific user (with pagination)
@@ -372,155 +523,4 @@
  *         description: Unauthorized
  *       500:
  *         description: Internal server error fetching assigned families
- *
- *   put:
- *     summary: Update an existing Family and its dependents
- *     tags: [Families]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *           format: uuid
- *         description: The existing Family UUID
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               block_id:
- *                 type: string
- *                 format: uuid
- *                 example: "123e4567-e89b-12d3-a456-426614174000"
- *               registration_number:
- *                 type: string
- *                 example: "Aq/A11/B20/001"
- *               house_number:
- *                 type: string
- *                 example: "123"
- *               head_of_household_name:
- *                 type: string
- *                 example: "Abebe Kebede (Updated)"
- *               phone_number:
- *                 type: string
- *                 example: "0911223344"
- *               is_vulnerable:
- *                 type: boolean
- *                 example: true
- *               is_safetynet_beneficiary:
- *                 type: boolean
- *                 example: false
- *               health_insurance_type:
- *                 type: string
- *                 enum: [FREE_OR_SPONSORED, PAYING, NOT_BENEFICIARY]
- *                 example: "PAYING"
- *               is_temporary_direct_support_beneficiary:
- *                 type: boolean
- *                 example: false
- *               latitude:
- *                 type: number
- *                 example: 9.005401
- *               longitude:
- *                 type: number
- *                 example: 38.763611
- *               guardian_name:
- *                 type: string
- *                 example: "Almaz"
- *               guardian_gender:
- *                 type: string
- *                 enum: [MALE, FEMALE]
- *               guardian_dob:
- *                 type: string
- *                 format: date
- *               guardian_phone_number:
- *                 type: string
- *               pregnant_mother:
- *                 type: object
- *                 properties:
- *                   name:
- *                     type: string
- *                   dob:
- *                     type: string
- *                     format: date
- *                 nullable: true
- *               lactating_mother:
- *                 type: object
- *                 properties:
- *                   name:
- *                     type: string
- *                   dob:
- *                     type: string
- *                     format: date
- *                 nullable: true
- *               children:
- *                 type: array
- *                 items:
- *                   type: object
- *                   properties:
- *                     name:
- *                       type: string
- *                     gender:
- *                       type: string
- *                       enum: [MALE, FEMALE]
- *                     dob:
- *                       type: string
- *                       format: date
- *                     vulnerable_to_growth_restriction:
- *                       type: boolean
- *     responses:
- *       200:
- *         description: Family updated successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: "Family updated successfully"
- *                 data:
- *                   type: object
- *       400:
- *         description: Validation error or invalid ID
- *       401:
- *         description: Unauthorized
- *       403:
- *         description: Forbidden (insufficient permissions)
- *       404:
- *         description: Family or Block not found
- *       500:
- *         description: Internal server error updating
- *
- *   delete:
- *     summary: Delete a Family record and its dependents
- *     tags: [Families]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *           format: uuid
- *         description: The Family UUID to delete
- *     responses:
- *       200:
- *         description: Family deleted successfully
- *       401:
- *         description: Unauthorized
- *       403:
- *         description: Forbidden (PC Worker can only delete their own creation)
- *       404:
- *         description: Family not found
- *       500:
- *         description: Internal server error deleting family
  */

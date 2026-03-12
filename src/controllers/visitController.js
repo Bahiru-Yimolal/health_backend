@@ -13,7 +13,7 @@ const startVisitController = async (req, res, next) => {
     try {
         const visitData = {
             family_id: req.body.family_id,
-            visitor_id: req.user.payload.user_id, // Match the user_id path from token payload
+            visitor_id: req.user.id, // Match the user_id path from token payload
             latitude: req.body.latitude,
             longitude: req.body.longitude
         };
@@ -58,7 +58,7 @@ const updateVisitController = async (req, res, next) => {
     try {
         const { id } = req.params;
         const updateData = req.body;
-        const actor = req.user.payload;
+        const actor = req.user;
 
         const updatedVisit = await updateVisitService(id, updateData, actor);
 

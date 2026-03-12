@@ -2,6 +2,7 @@ const HouseholdVisit = require("../models/householdVisit");
 const Family = require("../models/familyModel");
 const UserAssignment = require("../models/userAssignment");
 const PostnatalAssessment = require("../models/postnatalAssessment");
+const PregnantAssessment = require("../models/pregnantAssessment");
 const ChildAssessment = require("../models/childAssessment");
 const Referral = require("../models/referral");
 const sequelize = require("../config/database");
@@ -68,7 +69,7 @@ const updateVisitService = async (visitId, updateData, actor) => {
         }
 
         // Authorization: Only the original visitor or a supervisor can update
-        if (visit.visitor_id !== actor.user_id) {
+        if (visit.visitor_id !== actor.id) {
             // Check if supervisor (optional refinement later)
         }
 

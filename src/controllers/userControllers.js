@@ -13,7 +13,8 @@ const {
   getUserByIdService,
   getUserLoginInfoService,
   deleteUserService,
-  deactivateUserService
+  deactivateUserService,
+  activateUserService
 } = require("../services/userService");
 
 const authUserController = async (req, res, next) => {
@@ -326,6 +327,20 @@ const deactivateUserController = async (req, res, next) => {
   }
 };
 
+const activateUserController = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    await activateUserService(userId);
+
+    res.status(200).json({
+      success: true,
+      message: req.t ? req.t("success.user_activated") : "User activated successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   userRegistrationController,
   authUserController,
@@ -341,5 +356,6 @@ module.exports = {
   getAllUsersWithPendingStatusController,
   getUserLoginInfoController,
   deleteUserController,
-  deactivateUserController
+  deactivateUserController,
+  activateUserController
 };

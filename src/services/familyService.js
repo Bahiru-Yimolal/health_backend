@@ -540,7 +540,7 @@ const getFamiliesByAdminUnitService = async (filters, page, limit, user) => {
     }
 };
 
-const getAssignedFamiliesService = async (user, page, limit) => {
+const   getAssignedFamiliesService = async (user, page, limit) => {
     try {
         const offset = (page - 1) * limit;
 

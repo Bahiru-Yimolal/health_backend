@@ -60,50 +60,8 @@
  *         description: Family not found
  *       500:
  *         description: Server error
- *   patch:
- *     summary: Update an existing household visit
- *     tags: [Visits]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - name: id
- *         in: path
- *         description: ID of the visit to update
- *         required: true
- *         schema:
- *           type: string
- *           format: uuid
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               next_appointment_date:
- *                 type: string
- *                 format: date
- *                 example: "2024-03-25"
- *               service_type:
- *                 type: string
- *                 enum: ["ASSESSMENT", "GENERAL_COUNSELING", "OFFICIAL_SUPPORT_CHECK", "OTHER"]
- *               is_eligible_for_support:
- *                 type: boolean
- *               is_vulnerable:
- *                 type: boolean
- *               course_completed:
- *                 type: boolean
- *     responses:
- *       200:
- *         description: Visit updated successfully
- *       400:
- *         description: Bad request (validation error)
- *       401:
- *         description: Unauthorized
- *       404:
- *         description: Visit not found
- *       500:
- *         description: Server error
+ *
+ * /visits/{id}:
  *   get:
  *     summary: Fetch details of a household visit including assessments
  *     tags: [Visits]
@@ -153,6 +111,51 @@
  *                     ChildAssessment:
  *                       type: object
  *                       nullable: true
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Visit not found
+ *       500:
+ *         description: Server error
+ *
+ *   patch:
+ *     summary: Update an existing household visit
+ *     tags: [Visits]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         description: ID of the visit to update
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               next_appointment_date:
+ *                 type: string
+ *                 format: date
+ *                 example: "2024-03-25"
+ *               service_type:
+ *                 type: string
+ *                 enum: ["ASSESSMENT", "GENERAL_COUNSELING", "OFFICIAL_SUPPORT_CHECK", "OTHER"]
+ *               is_eligible_for_support:
+ *                 type: boolean
+ *               is_vulnerable:
+ *                 type: boolean
+ *               course_completed:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Visit updated successfully
+ *       400:
+ *         description: Bad request (validation error)
  *       401:
  *         description: Unauthorized
  *       404:
